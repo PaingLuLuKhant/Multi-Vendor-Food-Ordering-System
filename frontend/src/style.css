@@ -1,0 +1,73 @@
+/* Global */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f4f6f8;
+  color: #333;
+}
+
+/* Navbar */
+.navbar {
+  background-color: #1f2937;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 220px;
+  background-color: #111827;
+  height: 100vh;
+  color: white;
+  padding-top: 2rem;
+  position: fixed;
+}
+.sidebar a {
+  display: block;
+  padding: 1rem 1.5rem;
+  color: white;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.sidebar a:hover {
+  background-color: #374151;
+}
+
+/* Main content */
+.main {
+  margin-left: 220px;
+  padding: 2rem;
+}
+
+/* Cards */
+.card {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  margin-bottom: 1.5rem;
+}
+
+/* Table */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+.table th, .table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+}
+.table th {
+  background-color: #1f2937;
+  color: white;
+}
+.table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
