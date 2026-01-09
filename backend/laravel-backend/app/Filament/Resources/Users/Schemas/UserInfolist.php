@@ -1,21 +1,22 @@
 <?php
 
-namespace App\Filament\Resources\Products\Schemas;
+namespace App\Filament\Resources\Users\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
 
-class ProductInfolist
+class UserInfolist
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextEntry::make('shop_id')
-                    ->numeric(),
                 TextEntry::make('name'),
-                TextEntry::make('price')
-                    ->money(),
+                TextEntry::make('email')
+                    ->label('Email address'),
+                TextEntry::make('email_verified_at')
+                    ->dateTime()
+                    ->placeholder('-'),
                 TextEntry::make('created_at')
                     ->dateTime()
                     ->placeholder('-'),

@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
 {
@@ -55,4 +56,50 @@ class ProductResource extends Resource
             'edit' => EditProduct::route('/{record}/edit'),
         ];
     }
+
+    
+
+    public static function getEloquentQuery(): Builder
+    {
+        $user = auth()->user();
+
+        if ($user->isShopOwner()) {
+        
+            if (!$user->shop) {
+            return parent::getEloquentQuery()->whereRaw('1 = 0');
+        }
+        return parent::getEloquentQuery()->where('shop_id', $user->shop->id);
+    }
+
+        // Admins cannot see products
+        return parent::getEloquentQuery()->whereRaw('0 = 1');
+    }
+
+    
+
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->isShopOwner();
+    }
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+
+        return $user->isShopOwner() && $user->shop !== null;
+    }
+
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        $user = auth()->user();
+        return $user->isShopOwner() && $record->shop_id === $user->shop->id;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        $user = auth()->user();
+        return $user->isShopOwner() && $record->shop_id === $user->shop->id;
+    }
+
+
 }
