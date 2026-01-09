@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { shops } from "../../data/shopsData";
-import { useCart } from "../../context/CartContext"; // Import useCart
+import { useCart } from "../../context/CartContext";
 import "./ShopPage.css";
 
 const ShopPage = () => {
@@ -18,7 +18,7 @@ const ShopPage = () => {
     getShopCartTotal,
     getShopCartCount,
     setCartVisible 
-  } = useCart(); // Now properly used
+  } = useCart();
 
   const [activeTab, setActiveTab] = useState("all");
 
@@ -57,9 +57,9 @@ const ShopPage = () => {
       ...product,
       shopId: shop.id,
       shopName: shop.name,
-      image: product.image || shop.image // Add image for cart display
+      image: product.image || shop.image
     });
-    setCartVisible(true); // Show cart when item is added
+    setCartVisible(true);
   };
 
   const handleUpdateQuantity = (productId, newQty) => {
@@ -71,7 +71,6 @@ const ShopPage = () => {
   };
 
   const clearShopCart = () => {
-    // Remove all items from this shop's cart
     shopCart.forEach(item => {
       globalRemoveFromCart(item.id, shop.id);
     });
@@ -97,40 +96,26 @@ const ShopPage = () => {
 
   return (
     <div className="shop-page">
-      {/* Header */}
-      <header className="shop-header">
-        <div className="shop-header-top">
+      {/* Shop Info Header (not the app header) */}
+      <div className="shop-info-header">
+        <div className="shop-info-top">
           <button 
             onClick={() => navigate("/")} 
-            className="back-to-dashboard"
+            className="back-to-shops"
           >
             ← Back to Shops
           </button>
-          <div className="header-actions">
-            <button 
-              onClick={() => navigate("/profile")}
-              className="profile-btn"
-            >
-              👤 Profile
-            </button>
-            <button 
-              onClick={() => navigate("/cart")}
-              className="cart-btn-header"
-            >
-              🛒 Cart ({shopCartCount})
-            </button>
-          </div>
         </div>
         
-        <div className="shop-header-content">
-          <div className="shop-header-image">
+        <div className="shop-info-content">
+          <div className="shop-info-image">
             <img src={shop.image} alt={shop.name} />
             <div className="shop-rating-badge">
               ⭐ {shop.rating} • {getDeliveryTime()}
             </div>
           </div>
           
-          <div className="shop-header-info">
+          <div className="shop-info-details">
             <h1>{shop.name}</h1>
             <p className="shop-description">{shop.description}</p>
             <div className="shop-meta">
@@ -153,7 +138,7 @@ const ShopPage = () => {
             </div>
           </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <div className="shop-main-content">
@@ -190,7 +175,7 @@ const ShopPage = () => {
                     <h3>{product.name}</h3>
                     <p className="product-category">{product.category}</p>
                     <div className="product-price-row">
-                      <span className="product-price">${product.price}</span>
+                      <span className="product-price">${product.price.toFixed(2)}</span>
                       {quantityInCart > 0 && (
                         <span className="in-cart-badge">
                           {quantityInCart} in cart
@@ -256,7 +241,7 @@ const ShopPage = () => {
                   {shopCart.map(item => {
                     const qty = globalQuantities[item.id] || 1;
                     return (
-                      <div key={item.id} className="order-item">
+                      <div key={`${item.id}-${item.shopId}`} className="order-item">
                         <div className="item-main">
                           <span className="item-name">{item.name}</span>
                           <span className="item-category">{item.category}</span>

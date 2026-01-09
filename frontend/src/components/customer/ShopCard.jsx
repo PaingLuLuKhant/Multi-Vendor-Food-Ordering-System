@@ -22,7 +22,7 @@ const ShopCard = ({ shop }) => {
           </span>
         </div>
 
-        <div className="shop-products">
+        {/* <div className="shop-products">
           <h4>Popular Items:</h4>
           <ul>
             {shop.products.slice(0, 3).map(product => (
@@ -32,14 +32,14 @@ const ShopCard = ({ shop }) => {
               </li>
             ))}
           </ul>
-        </div>
+        </div> */}
 
         <div className="shop-footer">
           <div className="total-products">
             {shop.products.length} items available
           </div>
           <Link to={`/shop/${shop.id}`} className="view-shop-btn">
-            Visit Shop →
+            Visit Shop 
           </Link>
         </div>
       </div>
