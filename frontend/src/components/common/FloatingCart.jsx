@@ -19,8 +19,8 @@ const FloatingCart = () => {
 
   const deliveryFee = 2.99;
   const serviceFee = 1.49;
-  const subtotal = parseFloat(getCartTotal());
-  const total = subtotal + deliveryFee + serviceFee;
+  const subtotal = parseFloat(getCartTotal()) || 0;
+  const total = +(subtotal + deliveryFee + serviceFee).toFixed(2);
 
   if (!cartVisible) return null;
 
@@ -47,18 +47,30 @@ const FloatingCart = () => {
         <div className="cart-content">
           {cart.length === 0 ? (
             <div className="empty-cart-state">
-              <div className="empty-cart-icon">🛒</div>
-              <h3>Your cart is empty</h3>
-              <p>Add items from shops to get started</p>
-              <button 
-                onClick={() => {
-                  setCartVisible(false);
-                  navigate('/');
-                }}
-                className="browse-shops-btn"
-              >
-                Browse Shops
-              </button>
+              <div className="empty-card">
+                <div className="empty-illustration" aria-hidden="true">🛒</div>
+                <h3 className="empty-title">Your cart is empty</h3>
+                <p className="empty-subtitle">Add items from shops to get started</p>
+                <div className="empty-actions">
+                  <button 
+                    onClick={() => {
+                      setCartVisible(false);
+                      navigate('/');
+                    }}
+                    className="browse-shops-btn"
+                    type="button"
+                  >
+                    Browse Shops
+                  </button>
+                  <button
+                    onClick={() => setCartVisible(false)}
+                    className="dismiss-btn"
+                    type="button"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
             <>
