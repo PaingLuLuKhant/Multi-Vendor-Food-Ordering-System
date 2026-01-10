@@ -240,7 +240,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import OrdersPage from './pages/OrdersPage'; // Create this
 import './styles/App.css';
 
-function App() {
+function App() {   
   return (
     <AuthProvider>
       <CartProvider>
@@ -248,8 +248,7 @@ function App() {
           <div className="App">
             <Header />
             <FloatingCart />
-            <CartToggleButton />
-            
+            <CartToggleButton /> 
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={<LoginPage />} />
