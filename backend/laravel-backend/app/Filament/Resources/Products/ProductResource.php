@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Filament\Resources\Products;
+use UnitEnum;
 
 use App\Filament\Resources\Products\Pages\CreateProduct;
 use App\Filament\Resources\Products\Pages\EditProduct;
@@ -18,8 +19,15 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class ProductResource extends Resource
-{
+{   
+    
+
     protected static ?string $model = Product::class;
+
+
+
+protected static string|UnitEnum|null $navigationGroup = 'Shop';
+
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 

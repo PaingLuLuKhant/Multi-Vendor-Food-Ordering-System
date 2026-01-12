@@ -24,14 +24,17 @@ class UserFactory extends Factory
     public function definition(): array
     {
         $roles = ['admin', 'shop_owner', 'customer'];
+        $created = fake()->dateTimeBetween('-12 months', 'now');
 
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
+            'email_verified_at' => $created,
             'password' => Hash::make(value: '1234'),
             'remember_token' => Str::random(10),
-            'role' => fake()->randomElement($roles)
+            'role' => fake()->randomElement($roles),
+            'created_at' => $created,
+            'updated_at' => fake()->dateTimeBetween($created, 'now'),
         ];
     }
 
