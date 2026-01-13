@@ -11,6 +11,7 @@ class AuthController extends Controller
 {
     public function register(Request $request)
     {
+        \Log::info("REGISTER REQUEST:", $request->all());   // 👈 log frontend data
         $request->validate([
             'name' => 'required',
             'email' => 'required|email|unique:users',
@@ -31,6 +32,8 @@ class AuthController extends Controller
     } 
     public function login(Request $request)
     {
+        \Log::info("LOGIN REQUEST:", $request->all());   // 👈 log frontend data
+
         $request->validate([
             'email'=>'required|email',
             'password'=>'required'
@@ -44,7 +47,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => $user,
-            'token' => Str::random(60)
+            // 'token' => Str::random(60)
         ]);
     }  
 }
