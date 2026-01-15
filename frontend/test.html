@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fetch Test</title>
+</head>
+<body>
+<script>
+// 1️⃣ LOGIN
+fetch('http://127.0.0.1:8000/api/login', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+    },
+    body: JSON.stringify({
+        email: 'nicolas.elmore@example.net',
+        password: '123456'
+    })
+})
+.then(res => res.json())
+.then(data => {
+    console.log('LOGIN RESPONSE:', data);
+
+    // MUST exist
+    const token = data.token;
+    if (!token) throw 'NO TOKEN RETURNED';
+
+    // 2️⃣ CALL PROTECTED ROUTE (SAME AS POSTMAN)
+    return fetch('http://127.0.0.1:8000/api/user', {
+        headers: {
+            'Accept': 'application/json',
+            'Authorization': 'Bearer ' + token
+        }
+    });
+})
+.then(res => res.json())
+.then(user => {
+    console.log('AUTHENTICATED USER:', user);
+})
+.catch(err => console.error('ERROR:', err));
+
+</script>
+</body>
+</html>

@@ -57,43 +57,65 @@ const LoginPage = () => {
 
         setIsLoading(true);
 
+        // try {
+        //     // Call authentication context
+        //     const user = await login(formData.email, formData.password);
+
+        //     console.log("RAW BACKEND RESPONSE:", user);
+
+        //     if (user) {
+        //         // Handle remember me
+        //         if (formData.rememberMe) {
+        //             localStorage.setItem('rememberMe', 'true');
+        //             localStorage.setItem('userEmail', formData.email);
+        //         } else {
+        //             localStorage.removeItem('rememberMe');
+        //             localStorage.removeItem('userEmail');
+        //         }
+
+        //         // Redirect based on role
+        //         // if (user.user.role === 'customer') {
+        //         //     console.log("customer")
+        //         //     navigate(from, { replace: true });
+        //         // } else {
+        //         //     console.log("admin")
+        //         //     window.location.href = 'http://127.0.0.1:8000/admin';
+        //         // }
+        //         if (user.user.role === 'customer') {
+        //             console.log("customer")
+        //             navigate(from, { replace: true });
+        //         } else {
+        //             console.log("admin")
+        //             window.location.href = 'http://127.0.0.1:8000/admin';
+        //         }
+        //     } else {
+        //         setErrors({ general: 'Invalid email or password' });
+        //     }
+        // } catch (error) {
+        //     setErrors({ general: 'Login failed. Please try again.' });
+        //     console.error('Login error:', error);
+        // } finally {
+        //     setIsLoading(false);
+        // }
         try {
-            // Call authentication context
-            const user = await login(formData.email, formData.password);
+            const success = await login(formData.email, formData.password);
 
-            console.log("RAW BACKEND RESPONSE:", user);
+            console.log("LOGIN SUCCESS:", success);
+            console.log("TOKEN IN STORAGE:", localStorage.getItem("token"));
 
-            if (user) {
-                // Handle remember me
-                if (formData.rememberMe) {
-                    localStorage.setItem('rememberMe', 'true');
-                    localStorage.setItem('userEmail', formData.email);
-                } else {
-                    localStorage.removeItem('rememberMe');
-                    localStorage.removeItem('userEmail');
-                }
-
-                // Redirect based on role
-                if (user.user.role === 'customer') {
-                    console.log("customer")
-                    navigate(from, { replace: true });
-                } else {
-                    console.log("admin")
-                    window.location.href = 'http://127.0.0.1:8000/admin';
-                }
-            } else {
-                setErrors({ general: 'Invalid email or password' });
+            if (success) {
+                navigate(from, { replace: true });
             }
-        } catch (error) {
-            setErrors({ general: 'Login failed. Please try again.' });
-            console.error('Login error:', error);
+        } catch (err) {
+            console.error("Login error:", err);
+            setErrors({ general: "Login failed" });
         } finally {
             setIsLoading(false);
         }
     };
 
     const handleSocialLogin = (provider) => {
-        console.log(`Logging in with ${ provider }`);
+        console.log(`Logging in with ${provider}`);
         navigate('/');
     };
 
@@ -192,10 +214,10 @@ const LoginPage = () => {
                                     value={formData.email}
                                     onChange={handleInputChange}
                                     className={`form - input ${errors.email ? 'error' : ''}`}
-                                placeholder="you@example.com"
-                                disabled={isLoading}
-                                autoComplete="email"
-                />
+                                    placeholder="you@example.com"
+                                    disabled={isLoading}
+                                    autoComplete="email"
+                                />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
 
@@ -209,10 +231,10 @@ const LoginPage = () => {
                                         value={formData.password}
                                         onChange={handleInputChange}
                                         className={`form - input ${errors.password ? 'error' : ''}`}
-                                    placeholder="Enter your password"
-                                    disabled={isLoading}
-                                    autoComplete="current-password"
-                  />
+                                        placeholder="Enter your password"
+                                        disabled={isLoading}
+                                        autoComplete="current-password"
+                                    />
                                     <button
                                         type="button"
                                         className="password-toggle"
