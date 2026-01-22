@@ -17,8 +17,9 @@
   margin: 0 auto;
   padding: 0 2rem;
   display: flex;
-  align-items: center;
+  align-items: center;        /* vertical center */
   justify-content: space-between;
+  height: 70px;
 }
 
 /* Logo Section */
@@ -66,6 +67,7 @@
 
 /* Navigation */
 .header-nav {
+
   display: flex;
   align-items: center;
   gap: 2rem;
@@ -76,7 +78,7 @@
   text-decoration: none;
   color: #555;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.12rem;
   transition: all 0.3s ease;
   position: relative;
   padding: 0.5rem 0;
@@ -136,6 +138,7 @@
   position: relative;
 }
 
+
 /* Auth Buttons */
 .auth-buttons {
   display: flex;
@@ -143,59 +146,85 @@
   align-items: center;
 }
 
-.login-btn, .register-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
+/* Header Login Button */
+.header-login-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 12px;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.3s ease;
   font-size: 0.95rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 2px solid transparent;
-}
-
-.login-btn {
-  background: transparent;
+  background: #ffffff; /* subtle white */
   color: #667eea;
-  border-color: #667eea;
+  border: 2px solid #667eea;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15); /* soft shadow */
 }
 
-.login-btn:hover {
+.header-login-btn:hover {
   background: #667eea;
-  color: white;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.3);
 }
 
-.register-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+/* Header Register Button */
+.header-register-btn {
+  padding: 0.5rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: #ffffff; /* subtle white */
+  color: #667eea;
+  border: 2px solid #667eea;
   position: relative;
   overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(118, 75, 162, 0.2); /* soft shadow */
 }
 
-.register-btn::before {
+.header-register-btn::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.25),
+    transparent
+  );
   transition: left 0.7s ease;
 }
 
-.register-btn:hover::before {
+.header-register-btn:hover::before {
   left: 100%;
 }
 
-.register-btn:hover {
+.header-register-btn:hover {
+  background: #667eea;
+  color: #ffffff;
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 6px 18px rgba(102, 126, 234, 0.3);
 }
+
+/* Optional: add smooth text scaling on hover */
+.header-login-btn:hover span,
+.header-register-btn:hover span {
+  transform: scale(1.05);
+  transition: transform 0.3s ease;
+}
+
 
 /* User Menu */
 .user-btn {
@@ -459,10 +488,7 @@
     display: block;
   }
   
-  .header-user {
-    margin-left: auto;
-  }
-  
+
   .user-name {
     display: none;
   }

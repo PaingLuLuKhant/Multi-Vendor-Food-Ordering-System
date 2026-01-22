@@ -205,10 +205,10 @@ const Header = () => {
               </div>
             ) : (
               <div className="auth-buttons">
-                <Link to="/login" className="login-btn">
+                <Link to="/login" className="header-login-btn">
                   👤 Login
                 </Link>
-                <Link to="/register" className="register-btn">
+                <Link to="/register" className="header-register-btn">
                   ✨ Sign Up
                 </Link>
               </div>

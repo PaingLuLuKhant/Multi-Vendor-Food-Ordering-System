@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Hidden;
+
 
 class ProductForm
 {
@@ -11,9 +13,9 @@ class ProductForm
     {
         return $schema
             ->components([
-                TextInput::make('shop_id')
-                    ->required()
-                    ->numeric(),
+                Hidden::make('shop_id')
+                    ->default(fn () => auth()->user()->shop->id)
+                    ->required(),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('price')

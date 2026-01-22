@@ -30,7 +30,14 @@ const OrdersPage = ({ loggedInUser }) => {
                 }
             });
 
-            if (!res.ok) throw new Error("Unauthorized or failed");
+            if (!res.ok) {
+                if (res.status === 401) {
+                    navigate("/login");
+                } else {
+                    console.error("Server error:", res.status);
+                }
+                return;
+            }
 
             const data = await res.json();
             console.log("✅ ORDERS RECEIVED:", data);
@@ -38,7 +45,7 @@ const OrdersPage = ({ loggedInUser }) => {
             setOrders(data);
         } catch (err) {
             console.error("Failed to fetch orders:", err);
-            navigate("/login"); // if token invalid → back to login
+            // navigate("/login"); // if token invalid → back to login
         } finally {
             setLoading(false);
         }
@@ -113,9 +120,7 @@ const OrdersPage = ({ loggedInUser }) => {
                                     <div className="order-header">
                                         <div className="order-info">
                                             <h3>Order #{order.id}</h3>
-                                            <p>Status: {order.status}</p>
-                                            {/* <p className="order-date">Ordered on {order.date}</p>
-                                            <p className="order-shop">From: {order.shopName}</p> */}
+                                            <p>Status: {order.status}</p>                                            
                                         </div>
                                         <div
                                             className="order-status"
@@ -152,11 +157,11 @@ const OrdersPage = ({ loggedInUser }) => {
                                             >
                                                 View Details
                                             </button>
-                                            {order.status === 'delivered' && (
+                                            {/* {order.status === 'delivered' && (
                                                 <button className="reorder-btn">
                                                     Reorder
                                                 </button>
-                                            )}
+                                            )} */}
                                         </div>
                                     </div>
                                 </div>

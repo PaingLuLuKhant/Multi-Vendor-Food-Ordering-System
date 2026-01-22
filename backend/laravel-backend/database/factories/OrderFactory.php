@@ -18,7 +18,8 @@ class OrderFactory extends Factory
         return [
             'user_id' => $customer?->id ?? 1,
             'total_amount' => 0, // will update later after order items
-            'status' => fake()->randomElement(['pending','completed','cancelled']),
+            // 'status' => fake()->randomElement(['pending','completed','cancelled']),
+            'status' =>'completed'
         ];
     }
 }

@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import './RegisterPage.css';
+import './RegisterPage.css'; // your full CSS
 
 const RegisterPage = () => {
-
     const { register } = useAuth();
+    const navigate = useNavigate();
+
     const [formData, setFormData] = useState({
         name: '',
         email: '',
-        password: '',
-        confirmPassword: '',
         phone: '',
         address: '',
         role: 'customer',
+        password: '',
+        confirmPassword: '',
         acceptTerms: false
     });
 
@@ -21,118 +22,42 @@ const RegisterPage = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    const navigate = useNavigate();
-
-
-    const validateForm = () => {
-        const newErrors = {};
-
-        // Name validation
-        if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
-        } else if (formData.name.length < 2) {
-            newErrors.name = 'Name must be at least 2 characters';
-        }
-
-        // Email validation
-        if (!formData.email.trim()) {
-            newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email address';
-        }
-
-        // Phone validation (optional but recommended)
-        if (formData.phone && formData.phone.trim()) {
-            const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
-            if (!phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
-                newErrors.phone = 'Please enter a valid phone number';
-            }
-        }
-
-        // Address validation
-        if (!formData.address.trim()) {
-            newErrors.address = 'Delivery address is required';
-        }
-
-        // Password validation
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
-        } else if (!/(?=.*[A-Za-z])(?=.*\d)/.test(formData.password)) {
-            newErrors.password = 'Password must contain at least one letter and one number';
-        }
-
-        // Confirm password validation
-        if (formData.password !== formData.confirmPassword) {
-            newErrors.confirmPassword = 'Passwords do not match';
-        }
-
-        // Terms validation
-        if (!formData.acceptTerms) {
-            newErrors.acceptTerms = 'You must accept the terms and conditions';
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+    };
 
-        // Clear error when user starts typing
-        if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: '' }));
-        }
+    const validate = () => {
+        const newErrors = {};
+        if (!formData.name) newErrors.name = 'Full Name is required';
+        if (!formData.email) newErrors.email = 'Email is required';
+        if (!formData.password) newErrors.password = 'Password is required';
+        if (formData.password !== formData.confirmPassword)
+            newErrors.confirmPassword = 'Passwords do not match';
+        if (!formData.acceptTerms)
+            newErrors.acceptTerms = 'You must accept the terms';
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        if (!validateForm()) {
-            return;
-        }
+        if (!validate()) return;
 
         setIsLoading(true);
-
         try {
-            // Prepare complete user data for registration
-            const userData = {
-                name: formData.name.trim(),
-                email: formData.email.trim(),
-                password: formData.password,
-                phone: formData.phone.trim() || '',
-                address: formData.address.trim(),
-                role: formData.role,
-                // Generate avatar from name
-                // avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(formData.name.trim())}&background=4f46e5&color=ffffff&size=128`,
-                // Add timestamp for joined date
-                joinedDate: new Date().toISOString(),
-                // Additional default fields
-                emailVerified: false,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-
-            const result = await register(userData);
-
-            if (result) {
-                // Redirect to home or profile page
-                navigate('/login', {
-                    state: {
-                        welcomeMessage: 'Welcome to POS Marketplace! Your account has been created successfully.'
-                    }
-                });
+            const result = await register({ ...formData });
+            if (result.success) {
+                alert('Registration successful! Please login.');
+                navigate('/login');
             } else {
-                setErrors({ general: result.error || 'Registration failed. Please try again.' });
+                setErrors({ general: result.error || 'Registration failed' });
             }
-        } catch (error) {
-            setErrors({ general: 'Registration failed. Please try again.' });
-            console.error('Registration error:', error);
+        } catch (err) {
+            setErrors({ general: 'Registration failed' });
         } finally {
             setIsLoading(false);
         }
@@ -157,9 +82,7 @@ const RegisterPage = () => {
                     <form onSubmit={handleSubmit} className="register-form">
                         <div className="form-row">
                             <div className="form-group">
-                                <label htmlFor="name" className="form-label">
-                                    Full Name *
-                                </label>
+                                <label htmlFor="name" className="form-label">Full Name *</label>
                                 <input
                                     type="text"
                                     id="name"
@@ -170,17 +93,13 @@ const RegisterPage = () => {
                                     placeholder="John Doe"
                                     disabled={isLoading}
                                 />
-                                {errors.name && (
-                                    <span className="error-message">{errors.name}</span>
-                                )}
+                                {errors.name && <span className="error-message">{errors.name}</span>}
                             </div>
                         </div>
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label htmlFor="email" className="form-label">
-                                    Email Address *
-                                </label>
+                                <label htmlFor="email" className="form-label">Email Address *</label>
                                 <input
                                     type="email"
                                     id="email"
@@ -191,17 +110,13 @@ const RegisterPage = () => {
                                     placeholder="you@example.com"
                                     disabled={isLoading}
                                 />
-                                {errors.email && (
-                                    <span className="error-message">{errors.email}</span>
-                                )}
+                                {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
                         </div>
 
                         <div className="form-row">
                             <div className="form-group">
-                                <label htmlFor="phone" className="form-label">
-                                    Phone Number *
-                                </label>
+                                <label htmlFor="phone" className="form-label">Phone Number *</label>
                                 <input
                                     type="tel"
                                     id="phone"
@@ -212,71 +127,55 @@ const RegisterPage = () => {
                                     placeholder="+1 (555) 123-4567"
                                     disabled={isLoading}
                                 />
-                                {errors.phone && (
-                                    <span className="error-message">{errors.phone}</span>
-                                )}
+                                {errors.phone && <span className="error-message">{errors.phone}</span>}
                             </div>
                         </div>
 
-                        {/* NEW: Address Field */}
-                        <div className="form-row">
+                        <div className="form-row address-row">
                             <div className="form-group">
-                                <label htmlFor="address" className="form-label">
-                                    Delivery Address *
-                                </label>
+                                <label htmlFor="address" className="form-label">Delivery Address *</label>
                                 <textarea
                                     id="address"
                                     name="address"
                                     value={formData.address}
                                     onChange={handleInputChange}
-                                    className={`form-input ${errors.address ? 'error' : ''}`}
-                                    placeholder="Enter your complete delivery address (street, city, zip code)"
+                                    className={`form-input textarea-input ${errors.address ? 'error' : ''}`}
+                                    placeholder="Enter your complete delivery address"
                                     rows="3"
                                     disabled={isLoading}
                                 />
-                                {errors.address && (
-                                    <span className="error-message">{errors.address}</span>
-                                )}
+                                {errors.address && <span className="error-message">{errors.address}</span>}
                             </div>
                         </div>
 
-                        <div className="form-row">
+                        <div className="form-row role-row">
                             <div className="form-group">
-                                <label htmlFor="role" className="form-label">
-                                    Account Type
-                                </label>
+                                <label htmlFor="role" className="form-label">Account Type</label>
                                 <select
                                     id="role"
                                     name="role"
                                     value={formData.role}
                                     onChange={handleInputChange}
-                                    className="form-input"
+                                    className="form-input select-input"
                                     disabled={isLoading}
                                 >
                                     <option value="customer">Customer Account</option>
                                     <option value="vendor">Vendor Account</option>
                                 </select>
-                                <p className="form-hint">
-                                    {formData.role === 'customer'
-                                        ? 'Customer: Browse and order from shops'
-                                        : 'Vendor: Create and manage your own shop'}
-                                </p>
                             </div>
                         </div>
 
-                        <div className="form-row">
+                        <div className="form-row password-row">
                             <div className="form-group">
-                                <label htmlFor="password" className="form-label">
-                                    Password *
-                                </label>
+                                <label htmlFor="password" className="form-label">Password *</label>
                                 <div className="password-input-group">
                                     <input
-                                        type={showPassword ? "text" : "password"}
+                                        type={showPassword ? 'text' : 'password'}
                                         id="password"
                                         name="password"
                                         value={formData.password}
                                         onChange={handleInputChange}
-                                        className={`form-input ${errors.password ? 'error' : ''}`}
+                                        className={`form-input password-input ${errors.password ? 'error' : ''}`}
                                         placeholder="At least 6 characters with letters and numbers"
                                         disabled={isLoading}
                                     />
@@ -289,39 +188,22 @@ const RegisterPage = () => {
                                         {showPassword ? '👁️' : '👁️‍🗨️'}
                                     </button>
                                 </div>
-                                {errors.password && (
-                                    <span className="error-message">{errors.password}</span>
-                                )}
-                                <div className="password-hints">
-                                    <span className={`hint ${formData.password.length >= 6 ? 'valid' : ''}`}>
-                                        • At least 6 characters
-                                    </span>
-                                    <span className={`hint ${/(?=.*[A-Za-z])/.test(formData.password) ? 'valid' : ''}`}>
-                                        • At least one letter
-                                    </span>
-                                    <span className={`hint ${/(?=.*\d)/.test(formData.password) ? 'valid' : ''}`}>
-                                        • At least one number
-                                    </span>
-                                </div>
+                                {errors.password && <span className="error-message">{errors.password}</span>}
                             </div>
 
                             <div className="form-group">
-                                <label htmlFor="confirmPassword" className="form-label">
-                                    Confirm Password *
-                                </label>
+                                <label htmlFor="confirmPassword" className="form-label">Confirm Password *</label>
                                 <input
-                                    type={showPassword ? "text" : "password"}
+                                    type={showPassword ? 'text' : 'password'}
                                     id="confirmPassword"
                                     name="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={handleInputChange}
-                                    className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
+                                    className={`form-input password-input ${errors.confirmPassword ? 'error' : ''}`}
                                     placeholder="Confirm your password"
                                     disabled={isLoading}
                                 />
-                                {errors.confirmPassword && (
-                                    <span className="error-message">{errors.confirmPassword}</span>
-                                )}
+                                {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
                             </div>
                         </div>
 
@@ -336,36 +218,18 @@ const RegisterPage = () => {
                                     className={errors.acceptTerms ? 'error' : ''}
                                 />
                                 <span className="checkbox-text">
-                                    I agree to the <Link to="/terms" className="terms-link">Terms of Service</Link> and <Link to="/privacy" className="terms-link">Privacy Policy</Link> *
+                                    I agree to the <Link to="/terms" className="terms-link">Terms</Link> and <Link to="/privacy" className="terms-link">Privacy</Link> *
                                 </span>
                             </label>
-                            {errors.acceptTerms && (
-                                <span className="error-message">{errors.acceptTerms}</span>
-                            )}
+                            {errors.acceptTerms && <span className="error-message">{errors.acceptTerms}</span>}
                         </div>
 
-                        <button
-                            type="submit"
-                            className="register-btn"
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <>
-                                    <span className="spinner"></span>
-                                    Creating Account...
-                                </>
-                            ) : (
-                                'Create Account'
-                            )}
+                        <button type="submit" className="register-btn" disabled={isLoading}>
+                            {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
 
                         <div className="login-link">
-                            <p>
-                                Already have an account?{' '}
-                                <Link to="/login" className="link">
-                                    Sign in here
-                                </Link>
-                            </p>
+                            <p>Already have an account? <Link to="/login" className="link">Sign in here</Link></p>
                         </div>
                     </form>
 

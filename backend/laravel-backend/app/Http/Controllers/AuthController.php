@@ -15,9 +15,9 @@ class AuthController extends Controller
     {
         \Log::info("REGISTER REQUEST:", $request->all());   // 👈 log frontend data
         $request->validate([
-            'name' => 'required',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|min:6,confirmed'
         ]);
 
         $user = User::create([
@@ -28,43 +28,11 @@ class AuthController extends Controller
         ]);
 
         return response()->json([
-            'user' => $user,
+            'success' => true,
+            'message' => 'Registration successful',
             // 'token' => Str::random(60)   // fake token, frontend just stores it
-        ]);
+        ],201);
     }
-    // public function login(Request $request)
-    // {
-    //     \Log::info("LOGIN REQUEST:", $request->all());   // 👈 log frontend data
-
-    //     $request->validate([
-    //         'email'=>'required|email',
-    //         'password'=>'required'
-    //     ]);
-
-    //     $user = User::where('email', $request->email)->first();
-
-    //     if (!$user || !Hash::check($request->password, $user->password)) {
-    //         return response()->json(['message'=>'Invalid credentials'],401);
-    //     }
-
-
-
-    //     Auth::login($user);
-
-    //     // ✅ Log info to confirm
-    //     \Log::info('User logged in:', [
-    //     'user_id' => $user->id,
-    //     'email' => $user->email,
-    //     'session_id' => session()->getId(),  // shows session tied to cookie
-    //     'guard' => Auth::getDefaultDriver()
-    // ]);
-
-    //     return response()->json([
-    //         'user' => $user,
-    //         // 'token' => Str::random(60)
-    //     ]);
-    // }  
-
     public function login(Request $request)
     {
         if (!Auth::attempt($request->only('email', 'password'))) {

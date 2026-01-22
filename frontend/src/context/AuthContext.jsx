@@ -20,6 +20,33 @@ export const AuthProvider = ({ children }) => {
         setIsLoading(false);
     }, []);
 
+    // ✅ REGISTER
+    const register = async (userData) => {
+        try {
+            const response = await fetch('http://localhost:8000/api/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name: userData.name,
+                    email: userData.email,
+                    password: userData.password,
+                    password_confirmation: userData.confirmPassword,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                return { success: false, error: data.message || 'Registration failed' };
+            }
+
+            return { success: true };
+        } catch (err) {
+            console.error('Register error:', err);
+            return { success: false, error: 'Registration failed' };
+        }
+    };
+
     const login = async (email, password) => {
         try {
             const res = await fetch("http://127.0.0.1:8000/api/login", {
@@ -63,6 +90,7 @@ export const AuthProvider = ({ children }) => {
             value={{
                 user,
                 token,
+                register,
                 isAuthenticated: !!user,
                 isLoading,
                 login,

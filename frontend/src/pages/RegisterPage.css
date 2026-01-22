@@ -384,9 +384,9 @@
 }
 
 /* Register Button */
-.register-btn {
+/* .register-btn {
   width: 100%;
-  padding: 1rem;
+  padding: 1rem 2rem;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -403,6 +403,27 @@
   position: relative;
   overflow: hidden;
   min-height: 56px;
+} */
+ .register-btn {
+  width: 100%;
+  padding: 1rem 2rem;
+  background: var(--primary-gradient);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.025em;
+   white-space: nowrap; 
 }
 
 .register-btn:hover:not(:disabled) {
