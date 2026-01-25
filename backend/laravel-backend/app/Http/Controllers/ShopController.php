@@ -7,13 +7,13 @@ use App\Models\Shop;
 
 class ShopController extends Controller
 {
-    public function shops(Request $request){
+    public function allShops(Request $request){
         return response()->json([
             'shops' => Shop::with('products')->get()
         ]);
 
     }
-    public function showShops($id)
+    public function showSpecificShop($id)
     {
         $shop = Shop::with('products')->find($id);
 

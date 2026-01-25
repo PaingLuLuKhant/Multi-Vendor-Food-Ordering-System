@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
         ];
 
         $categories = [
-            'Myanmar Food', 'Chinese Food', 'Thai Cuisine', 'Fast Foods',
+            'Myanmar Food', 'Chinese Food', 'Thai Cuisine', 'Fast Food',
             'Italian Food', 'Seafood', 'Japanese Food', 'Vegan'
         ];
 
@@ -85,6 +85,8 @@ class DatabaseSeeder extends Seeder
                 'address' => fake()->address(),
                 'description' => fake()->sentence(10),
                 'category' => $categories[$i],
+                'created_at' => fake()->dateTimeBetween('-12 months', 'now'),
+                'updated_at' => now(),
             ]);
         }
 
@@ -97,6 +99,8 @@ class DatabaseSeeder extends Seeder
                 'address' => fake()->address(),
                 'description' => fake()->sentence(10),
                 'category' => fake()->randomElement($categories),
+                'created_at' => fake()->dateTimeBetween('-12 months', 'now'),
+                'updated_at' => now(),
             ]);
         }
 
