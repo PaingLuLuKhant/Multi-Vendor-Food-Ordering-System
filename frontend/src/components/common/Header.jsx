@@ -6,7 +6,7 @@ import './Header.css';
 
 const Header = () => {
   const { user, logout } = useAuth();
-  const { getCartCount } = useCart();
+  const { getCartCount, clearCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
   const [showUserMenu, setShowUserMenu] = useState(false);
@@ -14,6 +14,16 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
 
   const cartCount = getCartCount();
+
+  // Check if we're on a page where we want to hide Home & Orders links
+  const hideHomeAndOrders = 
+    location.pathname.startsWith('/shop/') || 
+    location.pathname === '/checkout';
+  
+  // Get user initial for avatar letter
+  const getUserInitial = () => {
+    return user?.name?.charAt(0).toUpperCase() || 'U';
+  };
 
   // Handle scroll effect
   useEffect(() => {
@@ -26,7 +36,6 @@ const Header = () => {
 
   // Close dropdowns on route change
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setShowUserMenu(false);
     setShowMobileMenu(false);
   }, [location.pathname]);
@@ -48,6 +57,7 @@ const Header = () => {
   }, [showUserMenu, showMobileMenu]);
 
   const handleLogout = () => {
+    clearCart();
     logout();
     navigate('/login');
     setShowUserMenu(false);
@@ -59,6 +69,12 @@ const Header = () => {
 
   const isActive = (path) => {
     return location.pathname === path;
+  };
+
+  // Simple navigation
+  const handleNavClick = (e, path) => {
+    e.preventDefault();
+    navigate(path);
   };
 
   return (
@@ -82,33 +98,39 @@ const Header = () => {
 
           {/* Navigation - Desktop */}
           <nav className="header-nav">
-            <Link 
-              to="/" 
-              className={`nav-link ${isActive('/') ? 'active' : ''}`}
-            >
-              🏠 Home
-            </Link>
-            <Link 
-              to="/shops" 
-              className={`nav-link ${isActive('/shops') ? 'active' : ''}`}
-            >
-              🏪 Shops
-            </Link>
-            <Link 
-              to="/orders" 
-              className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
-            >
-              📦 Orders
-            </Link>
+            {/* Only show Home link if NOT on shop or checkout page */}
+            {!hideHomeAndOrders && (
+              <Link 
+                to="/" 
+                className={`nav-link ${isActive('/') ? 'active' : ''}`}
+                onClick={(e) => handleNavClick(e, '/')}
+              >
+                🏠 Home
+              </Link>
+            )}
+            
+            {/* Only show Orders link if NOT on shop or checkout page */}
+            {!hideHomeAndOrders && (
+              <Link 
+                to="/orders" 
+                className={`nav-link ${isActive('/orders') ? 'active' : ''}`}
+                onClick={(e) => handleNavClick(e, '/orders')}
+              >
+                📦 Orders
+              </Link>
+            )}
+            
+            {/* Always show Cart link */}
             <Link 
               to="/cart" 
               className={`nav-link ${isActive('/cart') ? 'active' : ''}`}
+              onClick={(e) => handleNavClick(e, '/cart')}
             >
               🛒 Cart <span className="cart-count">{cartCount}</span>
             </Link>
           </nav>
 
-          {/* User Section */}
+          {/* User Section - Remaining code unchanged */}
           <div className="header-user">
             {user ? (
               <div className="user-menu-container">
@@ -117,23 +139,34 @@ const Header = () => {
                   onClick={() => setShowUserMenu(!showUserMenu)}
                   aria-label="User menu"
                 >
-                  <img 
-                    src={user.avatar} 
-                    alt={user.name}
-                    className="user-avatar-small"
-                  />
+                  {user.avatar ? (
+                    <img 
+                      src={user.avatar} 
+                      alt={user.name}
+                      className="user-avatar-small"
+                    />
+                  ) : (
+                    <div className="user-avatar-letter">
+                      {getUserInitial()}
+                    </div>
+                  )}
                   <span className="user-name">{user.name?.split(' ')[0]}</span>
-                  <span className="notification-badge">3</span>
                 </button>
                 
                 {showUserMenu && (
                   <div className="user-dropdown">
                     <div className="user-dropdown-header">
-                      <img 
-                        src={user.avatar} 
-                        alt={user.name}
-                        className="dropdown-avatar"
-                      />
+                      {user.avatar ? (
+                        <img 
+                          src={user.avatar} 
+                          alt={user.name}
+                          className="dropdown-avatar"
+                        />
+                      ) : (
+                        <div className="dropdown-avatar-letter">
+                          {getUserInitial()}
+                        </div>
+                      )}
                       <div className="dropdown-user-info">
                         <h4>{user.name}</h4>
                         <p>{user.email}</p>
@@ -145,7 +178,11 @@ const Header = () => {
                     <Link 
                       to="./profile" 
                       className="dropdown-item"
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('./profile');
+                        setShowUserMenu(false);
+                      }}
                     >
                       <span className="icon">👤</span>
                       My Profile
@@ -155,7 +192,11 @@ const Header = () => {
                       <Link 
                         to="/vendor/dashboard" 
                         className="dropdown-item"
-                        onClick={() => setShowUserMenu(false)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/vendor/dashboard');
+                          setShowUserMenu(false);
+                        }}
                       >
                         <span className="icon">🏪</span>
                         Vendor Dashboard
@@ -166,7 +207,11 @@ const Header = () => {
                       <Link 
                         to="/admin/dashboard" 
                         className="dropdown-item"
-                        onClick={() => setShowUserMenu(false)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          navigate('/admin/dashboard');
+                          setShowUserMenu(false);
+                        }}
                       >
                         <span className="icon">⚙️</span>
                         Admin Dashboard
@@ -176,7 +221,11 @@ const Header = () => {
                     <Link 
                       to="/orders" 
                       className="dropdown-item"
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/orders');
+                        setShowUserMenu(false);
+                      }}
                     >
                       <span className="icon">📦</span>
                       My Orders
@@ -185,7 +234,11 @@ const Header = () => {
                     <Link 
                       to="/settings" 
                       className="dropdown-item"
-                      onClick={() => setShowUserMenu(false)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate('/settings');
+                        setShowUserMenu(false);
+                      }}
                     >
                       <span className="icon">⚙️</span>
                       Settings
@@ -205,10 +258,18 @@ const Header = () => {
               </div>
             ) : (
               <div className="auth-buttons">
-                <Link to="/login" className="header-login-btn">
+                <Link 
+                  to="/login" 
+                  className="header-login-btn"
+                  onClick={(e) => handleNavClick(e, '/login')}
+                >
                   👤 Login
                 </Link>
-                <Link to="/register" className="header-register-btn">
+                <Link 
+                  to="/register" 
+                  className="header-register-btn"
+                  onClick={(e) => handleNavClick(e, '/register')}
+                >
                   ✨ Sign Up
                 </Link>
               </div>
@@ -217,7 +278,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu - Updated for shop and checkout pages */}
       {showMobileMenu && (
         <>
           <div 
@@ -240,31 +301,60 @@ const Header = () => {
             </div>
             
             <div className="mobile-nav-items">
-              <Link 
-                to="/" 
-                className={`mobile-nav-item ${isActive('/') ? 'active' : ''}`}
-                onClick={() => setShowMobileMenu(false)}
-              >
-                🏠 Home
-              </Link>
-              <Link 
-                to="/shops" 
-                className={`mobile-nav-item ${isActive('/shops') ? 'active' : ''}`}
-                onClick={() => setShowMobileMenu(false)}
-              >
-                🏪 Shops
-              </Link>
-              <Link 
-                to="/orders" 
-                className={`mobile-nav-item ${isActive('/orders') ? 'active' : ''}`}
-                onClick={() => setShowMobileMenu(false)}
-              >
-                📦 Orders
-              </Link>
+              {/* Only show Home link if NOT on shop or checkout page */}
+              {!hideHomeAndOrders && (
+                <Link 
+                  to="/" 
+                  className={`mobile-nav-item ${isActive('/') ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/');
+                    setShowMobileMenu(false);
+                  }}
+                >
+                  🏠 Home
+                </Link>
+              )}
+              
+              {/* Only show Shops link if NOT on shop or checkout page */}
+              {!hideHomeAndOrders && (
+                <Link 
+                  to="/shops" 
+                  className={`mobile-nav-item ${isActive('/shops') ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/shops');
+                    setShowMobileMenu(false);
+                  }}
+                >
+                  🏪 Shops
+                </Link>
+              )}
+              
+              {/* Only show Orders link if NOT on shop or checkout page */}
+              {!hideHomeAndOrders && (
+                <Link 
+                  to="/orders" 
+                  className={`mobile-nav-item ${isActive('/orders') ? 'active' : ''}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate('/orders');
+                    setShowMobileMenu(false);
+                  }}
+                >
+                  📦 Orders
+                </Link>
+              )}
+              
+              {/* Always show Cart link */}
               <Link 
                 to="/cart" 
                 className={`mobile-nav-item ${isActive('/cart') ? 'active' : ''}`}
-                onClick={() => setShowMobileMenu(false)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  navigate('/cart');
+                  setShowMobileMenu(false);
+                }}
               >
                 🛒 Cart ({cartCount})
               </Link>
@@ -274,11 +364,17 @@ const Header = () => {
               {user ? (
                 <>
                   <div className="mobile-user-info">
-                    <img 
-                      src={user.avatar} 
-                      alt={user.name}
-                      className="user-avatar-small"
-                    />
+                    {user.avatar ? (
+                      <img 
+                        src={user.avatar} 
+                        alt={user.name}
+                        className="user-avatar-small"
+                      />
+                    ) : (
+                      <div className="mobile-avatar-letter">
+                        {getUserInitial()}
+                      </div>
+                    )}
                     <div>
                       <h4>{user.name}</h4>
                       <p>{user.email}</p>
@@ -287,7 +383,11 @@ const Header = () => {
                   <Link 
                     to="/profile" 
                     className="mobile-nav-item"
-                    onClick={() => setShowMobileMenu(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/profile');
+                      setShowMobileMenu(false);
+                    }}
                   >
                     👤 My Profile
                   </Link>
@@ -303,14 +403,22 @@ const Header = () => {
                   <Link 
                     to="/login" 
                     className="login-btn"
-                    onClick={() => setShowMobileMenu(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/login');
+                      setShowMobileMenu(false);
+                    }}
                   >
                     👤 Login
                   </Link>
                   <Link 
                     to="/register" 
                     className="register-btn"
-                    onClick={() => setShowMobileMenu(false)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate('/register');
+                      setShowMobileMenu(false);
+                    }}
                   >
                     ✨ Sign Up
                   </Link>

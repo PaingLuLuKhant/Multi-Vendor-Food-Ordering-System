@@ -7,6 +7,21 @@ export const AuthProvider = ({ children }) => {
     const [token, setToken] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
+    // Clear cart data from localStorage
+    const clearCartData = () => {
+        // Clear generic cart data
+        localStorage.removeItem("pos-cart");
+        localStorage.removeItem("pos-cart-quantities");
+        
+        // Clear any user-specific cart data
+        const allKeys = Object.keys(localStorage);
+        allKeys.forEach(key => {
+            if (key.startsWith("cart_")) {
+                localStorage.removeItem(key);
+            }
+        });
+    };
+
     // Restore auth on refresh
     useEffect(() => {
         const savedUser = localStorage.getItem("user");
@@ -64,6 +79,10 @@ export const AuthProvider = ({ children }) => {
                 throw new Error(data.message || "Login failed");
             }
 
+            // ✅ Clear any existing guest cart before logging in
+            localStorage.removeItem("pos-cart");
+            localStorage.removeItem("pos-cart-quantities");
+
             // ✅ STORE BOTH
             setUser(data.user);
             setToken(data.token);
@@ -79,6 +98,10 @@ export const AuthProvider = ({ children }) => {
     };
 
     const logout = () => {
+        // Clear cart data
+        clearCartData();
+        
+        // Clear auth data
         setUser(null);
         setToken(null);
         localStorage.removeItem("user");

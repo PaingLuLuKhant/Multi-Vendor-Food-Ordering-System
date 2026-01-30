@@ -101,8 +101,8 @@ const OrderConfirmation = () => {
                         </div>
                       </div>
                       <div className="table-cell">×{qty}</div>
-                      <div className="table-cell">${item.price.toFixed(2)}</div>
-                      <div className="table-cell">${(item.price * qty).toFixed(2)}</div>
+                      <div className="table-cell">MMK {item.price.toFixed(2)}</div>
+                      <div className="table-cell">MMK {(item.price * qty).toFixed(2)}</div>
                     </div>
                   );
                 })}
@@ -115,19 +115,19 @@ const OrderConfirmation = () => {
               <div className="summary-grid">
                 <div className="summary-row">
                   <span>Subtotal</span>
-                  <span>${orderDetails.subtotal || '0.00'}</span>
+                  <span>MMK {orderDetails.subtotal || '0.00'}</span>
                 </div>
-                <div className="summary-row">
+                {/* <div className="summary-row">
                   <span>Delivery Fee</span>
                   <span>${orderDetails.deliveryFee || '2.99'}</span>
-                </div>
+                </div> */}
                 <div className="summary-row">
                   <span>Service Fee</span>
-                  <span>${orderDetails.serviceFee || '1.49'}</span>
+                  <span>MMK {orderDetails.serviceFee || '1.49'}</span>
                 </div>
                 <div className="summary-row total">
                   <span>Total</span>
-                  <span>${orderDetails.total || '0.00'}</span>
+                  <span>MMK {orderDetails.total || '0.00'}</span>
                 </div>
               </div>
             </div>
@@ -181,7 +181,7 @@ const OrderConfirmation = () => {
               <div className="support-contacts">
                 <div className="contact-item">
                   <span className="contact-icon">📞</span>
-                  <span>(555) 123-4567</span>
+                  <span>(+959) 542-9118</span>
                 </div>
                 <div className="contact-item">
                   <span className="contact-icon">✉️</span>

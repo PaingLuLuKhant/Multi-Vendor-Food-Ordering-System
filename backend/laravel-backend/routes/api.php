@@ -26,6 +26,6 @@ Route::get('/shops/{id}', [ShopController::class, 'showSpecificShop']);    // Si
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders', [OrderController::class, 'orders']);
-
+    Route::post('/orders', [OrderController::class, 'store']); // ✅ create order
 });
 

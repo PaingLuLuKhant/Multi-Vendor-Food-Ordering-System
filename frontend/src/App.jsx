@@ -90,8 +90,8 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import PrivateRoute from './components/common/PrivateRoute';
 import Header from './components/common/Header';
-import FloatingCart from './components/common/FloatingCart';
-import CartToggleButton from './components/common/CartToggleButton';
+// import FloatingCart from './components/common/FloatingCart';
+// import CartToggleButton from './components/common/CartToggleButton';
 import CustomerDashboard from './components/customer/CustomerDashboard';
 import ShopPage from './components/customer/ShopPage';
 import CartPage from './components/customer/CartPage';
@@ -111,8 +111,8 @@ function App() {
         <Router>
           <div className="App">
             <Header />
-            <FloatingCart />
-            <CartToggleButton />
+            {/* <FloatingCart /> */}
+            {/* <CartToggleButton /> */}
             <Routes>
               {/* 🌍 PUBLIC */}
               <Route path="/" element={<CustomerDashboard />} />

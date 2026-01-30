@@ -33,16 +33,51 @@
   color: #333;
 }
 
+/* Form group styling */
 .form-group {
-  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
 }
 
+/* Label styling */
 .form-group label {
   display: block;
   margin-bottom: 0.5rem;
   font-weight: 500;
   color: #555;
 }
+
+/* Select dropdown styling */
+.form-group select {
+  padding: 10px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+/* Hover effect */
+.form-group select:hover {
+  border-color: #667eea; /* nice subtle blue */
+}
+
+/* Focus effect */
+.form-group select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+/* Placeholder option styling */
+.form-group select option[value=""] {
+  color: #999;
+}
+
+
+
 
 .form-group input {
   width: 100%;
@@ -104,7 +139,7 @@
 }
 
 .submit-order-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, black);
   color: white;
 }
 

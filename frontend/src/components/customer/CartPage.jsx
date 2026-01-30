@@ -14,10 +14,10 @@ const CartPage = () => {
     getCartTotal 
   } = useCart();
 
-  const deliveryFee = 2.99;
-  const serviceFee = 1.49;
-  const subtotal = parseFloat(getCartTotal());
-  const total = subtotal + deliveryFee + serviceFee;
+const subtotal = parseFloat(getCartTotal());
+const serviceFee = subtotal * 0.10; // 10% of subtotal
+const total = subtotal  + serviceFee;
+
 
   if (cart.length === 0) {
     return (
@@ -56,7 +56,7 @@ const CartPage = () => {
                   <div className="item-details">
                     <h3>{item.name}</h3>
                     <p className="item-shop">{item.shopName}</p>
-                    <p className="item-category">{item.category}</p>
+                    {/* <p className="item-category">{item.category}</p> */}
                   </div>
                   <div className="item-controls">
                     <div className="quantity-control">
@@ -75,7 +75,7 @@ const CartPage = () => {
                       </button>
                     </div>
                     <div className="item-price">
-                      ${(item.price * qty).toFixed(2)}
+                      MMK {(item.price * qty).toFixed(2)}
                     </div>
                     <button
                       onClick={() => removeFromCart(item.id)}
@@ -94,20 +94,20 @@ const CartPage = () => {
             <div className="summary-details">
               <div className="summary-row">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
+                <span>MMK {subtotal.toFixed(2)}</span>
               </div>
-              <div className="summary-row">
+              {/* <div className="summary-row">
                 <span>Delivery Fee</span>
-                <span>${deliveryFee.toFixed(2)}</span>
-              </div>
+                <span>MMK {deliveryFee.toFixed(2)}</span>
+              </div> */}
               <div className="summary-row">
                 <span>Service Fee</span>
-                <span>${serviceFee.toFixed(2)}</span>
+                <span>MMK {serviceFee.toFixed(2)}</span>
               </div>
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>
-                <span>${total.toFixed(2)}</span>
+                <span>MMK {total.toFixed(2)}</span>
               </div>
             </div>
 

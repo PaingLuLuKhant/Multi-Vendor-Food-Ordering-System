@@ -8,6 +8,15 @@
   --shadow-light: rgba(0, 0, 0, 0.05);
   --shadow-medium: rgba(0, 0, 0, 0.08);
   --surface-light: #F9FAFB;
+  --shop-title-color: #FFFFFF;
+}
+
+/* Default category variables */
+:root {
+  --category-color: #667eea;
+  --category-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --category-light: #f8f9ff;
+  --category-text: #2d3748;
 }
 
 .shop-card {
@@ -69,7 +78,7 @@
 .shop-icon {
   width: 56px;
   height: 56px;
-  background: linear-gradient(135deg, var(--category-color), color-mix(in srgb, var(--category-color) 30%, white));
+  background: var(--category-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -125,7 +134,7 @@
   margin: 0 0 8px 0;
   font-size: 18px;
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--shop-title-color, #FFFFFF); /* Fixed: Always white */
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -136,9 +145,9 @@
 .shop-category-tag {
   display: inline-block;
   padding: 4px 12px;
-  background: var(--surface-light);
-  color: var(--category-color);
-  border: 1px solid color-mix(in srgb, var(--category-color) 20%, transparent);
+  background: var(--category-light, #f8f9ff);
+  color: var(--category-color, #667eea);
+  border: 1px solid color-mix(in srgb, var(--category-color, #667eea) 20%, transparent);
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
@@ -184,9 +193,10 @@
   font-size: 14px;
   line-height: 1.6;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2; /* Show at least 2 lines */
   -webkit-box-orient: vertical;
   overflow: hidden;
+  min-height: 44px;
 }
 
 .shop-details-grid {
@@ -251,9 +261,9 @@
 }
 
 .feature-tag:hover {
-  background: var(--category-color);
+  background: var(--category-color, #667eea);
   color: white;
-  border-color: var(--category-color);
+  border-color: var(--category-color, #667eea);
 }
 
 /* Footer Section */
@@ -285,7 +295,7 @@
 
 .cta-button {
   padding: 10px 24px;
-  background: var(--category-color);
+  background: var(--category-color, #667eea);
   color: white;
   text-decoration: none;
   border-radius: 8px;
@@ -299,7 +309,7 @@
 }
 
 .cta-button:hover {
-  background: color-mix(in srgb, var(--category-color) 90%, black);
+  background: color-mix(in srgb, var(--category-color, #667eea) 90%, black);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -311,6 +321,8 @@
 .cta-button:hover .cta-icon {
   transform: translateX(3px);
 }
+
+/* Use CSS variables throughout - already integrated above */
 
 /* Responsive Design */
 @media (max-width: 768px) {
@@ -379,6 +391,10 @@
     box-shadow: none;
     border: 1px solid #ddd;
     break-inside: avoid;
+  }
+  
+  .shop-title {
+    color: #000000 !important; /* Black for print readability */
   }
   
   .cta-button {

@@ -982,3 +982,49 @@
     font-size: 0.9rem;
   }
 }
+/* Add to the top of CustomerDashboard.css */
+:root {
+  /* Default category variables */
+  --category-color: #667eea;
+  --category-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Update category buttons */
+.category-btn {
+  --category-color: var(--category-color, #667eea);
+  --category-gradient: var(--category-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+  
+  border: 2px solid color-mix(in srgb, var(--category-color) 30%, transparent);
+  color: var(--category-color);
+}
+
+.category-btn:hover {
+  border-color: var(--category-color);
+  color: var(--category-color);
+}
+
+.category-btn.active {
+  background: var(--category-gradient);
+  border-color: var(--category-color);
+  color: white;
+}
+
+/* Update featured category cards */
+.category-card {
+  --category-color: var(--category-color, #667eea);
+  --category-gradient: var(--category-gradient, linear-gradient(135deg, #667eea 0%, #764ba2 100%));
+  
+  border-color: color-mix(in srgb, var(--category-color) 30%, transparent);
+}
+
+.category-card:hover {
+  border-color: var(--category-color);
+}
+
+.category-card::before {
+  background: var(--category-gradient);
+}
+
+.category-card-icon {
+  color: var(--category-color);
+}

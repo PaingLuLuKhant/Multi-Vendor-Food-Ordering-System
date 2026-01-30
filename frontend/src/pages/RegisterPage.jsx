@@ -149,21 +149,18 @@ const RegisterPage = () => {
                         </div>
 
                         <div className="form-row role-row">
-                            <div className="form-group">
-                                <label htmlFor="role" className="form-label">Account Type</label>
-                                <select
-                                    id="role"
-                                    name="role"
-                                    value={formData.role}
-                                    onChange={handleInputChange}
-                                    className="form-input select-input"
-                                    disabled={isLoading}
-                                >
-                                    <option value="customer">Customer Account</option>
-                                    <option value="vendor">Vendor Account</option>
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label className="form-label">Account Type</label>
+                            <input
+                            type="text"
+                            value="Customer Account"
+                            className="form-input"
+                            disabled
+                            />
+                            <input type="hidden" name="role" value="customer" />
                         </div>
+                        </div>
+
 
                         <div className="form-row password-row">
                             <div className="form-group">

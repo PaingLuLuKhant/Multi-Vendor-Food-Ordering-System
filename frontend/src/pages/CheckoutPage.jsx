@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Keep this import
+import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import './CheckoutPage.css';
 
 const CheckoutPage = () => {
-  const navigate = useNavigate(); // Actually use the hook
+  const navigate = useNavigate();
   const { cart, quantities, getCartTotal, clearCart } = useCart();
-  
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -16,11 +16,14 @@ const CheckoutPage = () => {
     paymentMethod: 'credit'
   });
 
+  const [loading, setLoading] = useState(false);
+
   const deliveryFee = 2.99;
   const serviceFee = 1.49;
   const subtotal = parseFloat(getCartTotal());
   const total = subtotal + deliveryFee + serviceFee;
 
+  // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -29,43 +32,74 @@ const CheckoutPage = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
-  e.preventDefault();
-  
-  const orderDetails = {
-    ...formData,
-    items: cart,
-    quantities,
-    subtotal: subtotal.toFixed(2),
-    deliveryFee: deliveryFee.toFixed(2),
-    serviceFee: serviceFee.toFixed(2),
-    total: total.toFixed(2),
-    orderDate: new Date().toISOString()
+  // Handle order submission
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const orderItems = cart.map(item => ({
+        product_id: item.id,
+        quantity: quantities[item.id] || 1,
+        price: item.price
+      }));
+
+      const data = {
+        total_amount: parseFloat(total.toFixed(2)),
+        items: orderItems,
+        ...formData
+      };
+
+      const token = localStorage.getItem('token'); // your auth token
+
+      const response = await fetch('http://127.0.0.1:8000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(data)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Order submission failed');
+      }
+
+      console.log('Order response:', result);
+
+      // Clear cart
+      clearCart();
+
+      // Navigate to confirmation page
+      navigate('/order-confirmation', {
+        state: { orderDetails: result }
+      });
+
+    } catch (error) {
+      console.error('Order submission failed:', error.message);
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
-  
-  // Clear cart after successful order
-  clearCart();
-  
-  // Navigate to confirmation page
-  navigate('/order-confirmation', {
-    state: { orderDetails }
-  });
-};
 
   const handleCancel = () => {
-    navigate('/cart'); // Navigate back to cart
+    navigate('/cart'); // Go back to cart
   };
 
   return (
     <div className="checkout-page">
       <div className="checkout-container">
         <h1>Checkout</h1>
-        
         <div className="checkout-content">
+
           {/* Billing Form */}
           <form onSubmit={handleSubmit} className="checkout-form">
             <h2>Billing Information</h2>
-            
+
             <div className="form-group">
               <label htmlFor="name">Full Name</label>
               <input
@@ -144,7 +178,7 @@ const CheckoutPage = () => {
                 />
                 <span>💳 Credit/Debit Card</span>
               </label>
-              
+
               <label className="payment-option">
                 <input
                   type="radio"
@@ -155,7 +189,7 @@ const CheckoutPage = () => {
                 />
                 <span>💵 Cash on Delivery</span>
               </label>
-              
+
               <label className="payment-option">
                 <input
                   type="radio"
@@ -172,8 +206,8 @@ const CheckoutPage = () => {
               <button type="button" onClick={handleCancel} className="cancel-btn">
                 Cancel
               </button>
-              <button type="submit" className="submit-order-btn">
-                Place Order - ${total.toFixed(2)}
+              <button type="submit" className="submit-order-btn" disabled={loading}>
+                {loading ? 'Placing Order...' : `Place Order - $${total.toFixed(2)}`}
               </button>
             </div>
           </form>
@@ -181,7 +215,6 @@ const CheckoutPage = () => {
           {/* Order Summary */}
           <div className="order-summary-sidebar">
             <h2>Order Summary</h2>
-            
             <div className="order-items">
               {cart.map(item => {
                 const qty = quantities[item.id] || 1;
@@ -219,6 +252,7 @@ const CheckoutPage = () => {
               <p>Free delivery on orders over $20</p>
             </div>
           </div>
+
         </div>
       </div>
     </div>

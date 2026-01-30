@@ -280,12 +280,213 @@
 
 // export default CustomerDashboard;
 
+// import React, { useState, useEffect } from "react";
+// import ShopCard from "./ShopCard";
+// // import RestaurantCard from "./RestaurantCard";
+// import "./CustomerDashboard.css";
+// import { useAuth } from "../../context/AuthContext";
+// // adjust path if needed
+
+// const CustomerDashboard = () => {
+//   const { token } = useAuth();
+
+//   const [shops, setShops] = useState([]);
+//   const [filteredShops, setFilteredShops] = useState([]);
+//   const [selectedCategory, setSelectedCategory] = useState("all");
+//   const [searchTerm, setSearchTerm] = useState("");
+//   const [loading, setLoading] = useState(true);
+//   const [error, setError] = useState(null);
+
+//   // Utility function to convert to Title Case
+
+//   // Icons for categories
+//   const categoryIcons = { 
+//     food: "🍔",
+//     grocery: "🛒",
+//     fashion: "👕",
+//     electronics: "📱",
+//     beauty: "💄",
+//   };
+
+//   // Fetch shops from API
+//   useEffect(() => {
+//     const fetchShops = async () => {
+//       try {
+//         const res = await fetch("http://127.0.0.1:8000/api/shops", {
+//           headers: {
+//             Accept: "application/json",
+//             Authorization: `Bearer ${token}`,
+//           },
+//         });
+
+//         if (!res.ok) {
+//           throw new Error("Failed to fetch shops");
+//         }
+
+//         const data = await res.json();
+//         setShops(data.shops || []);
+//         setFilteredShops(data.shops || []);
+//       } catch (err) {
+//         console.error(err);
+//         setError(err.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+
+//     fetchShops();
+//   }, [token]);
+
+//   // Filter logic
+//   useEffect(() => {
+//     let filtered = [...shops];
+
+//     if (selectedCategory !== "all") {
+//       filtered = filtered.filter(
+//         (shop) => shop.category === selectedCategory
+//       );
+//     }
+
+//     if (searchTerm.trim()) {
+//       const term = searchTerm.toLowerCase();
+//       filtered = filtered.filter(
+//         (shop) =>
+//           shop.name?.toLowerCase().includes(term) ||
+//           shop.address?.toLowerCase().includes(term) ||
+//           shop.phone?.toLowerCase().includes(term)
+//       );
+//     }
+
+//     setFilteredShops(filtered);
+//   }, [shops, selectedCategory, searchTerm]);
+
+//   const clearFilters = () => {
+//     setSelectedCategory("all");
+//     setSearchTerm("");
+//   };
+
+//   // Stats (safe)
+//   const totalProducts = shops.reduce(
+//     (total, shop) => total + (shop.products ? shop.products.length : 0),
+//     0
+//   );
+
+//   const averageRating =
+//     shops.length > 0
+//       ? (
+//           shops.reduce((total, shop) => total + (shop.rating || 0), 0) /
+//           shops.length
+//         ).toFixed(1)
+//       : "0.0";
+
+//   const apiCategories = [
+//     ...new Set(shops.map((shop) => shop.category).filter(Boolean)),
+//   ];
+
+//   if (loading) {
+//     return (
+//       <div className="loading-shops">
+//         <div className="spinner"></div>
+//         <p>Loading shops...</p>
+//       </div>
+//     );
+//   }
+
+//   if (error) {
+//     return <p style={{ color: "red", textAlign: "center" }}>{error}</p>;
+//   }
+
+//   return (
+//     <div className="customer-dashboard">
+//       {/* Hero */}
+//       <div className="dashboard-hero">
+//         <div className="hero-content">
+//           <h1>POS Marketplace</h1>
+//           <p>Discover and order from local shops in your area</p>
+//           <div className="hero-stats">
+//             <div className="stat">
+//               <span className="stat-number">{shops.length}</span>
+//               <span className="stat-label">Shops</span>
+//             </div>
+//             <div className="stat">
+//               <span className="stat-number">{totalProducts}</span>
+//               <span className="stat-label">Products</span>
+//             </div>
+//             <div className="stat">
+//               <span className="stat-number">{averageRating}</span>
+//               <span className="stat-label">Avg Rating</span>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Search */}
+//       <div className="dashboard-controls">
+//         <div className="search-container">
+//           <div className="search-input-group">
+//             <span className="search-icon">🔍</span>
+//             <input
+//               type="text"
+//               placeholder="Search shops..."
+//               value={searchTerm}
+//               onChange={(e) => setSearchTerm(e.target.value)}
+//               className="search-input"
+//             />
+//           </div>
+//         </div>
+
+//         {/* Categories */}
+//         <div className="category-buttons">
+//           <button
+//             className={`category-btn ${
+//               selectedCategory === "all" ? "active" : ""
+//             }`}
+//             onClick={() => setSelectedCategory("all")}
+//           >
+//             🏪 ALL
+//           </button>
+
+//           {apiCategories.map((category) => (
+//             <button
+//               key={category}
+//               className={`category-btn ${
+//                 selectedCategory === category ? "active" : ""
+//               }`}
+//               onClick={() => setSelectedCategory(category)}
+//             >
+//               {categoryIcons[category?.toLowerCase()] || "🍛"}{" "}
+//               {category}
+//             </button>
+//           ))}
+//         </div>
+//       </div>
+
+//       {/* Results */}
+//       <div className="dashboard-results">
+//         {filteredShops.length > 0 ? (
+//           <div className="shops-grid">
+//             {filteredShops.map((shop) => (
+//               <ShopCard key={shop.id} shop={shop} />
+//             ))}
+//           </div>
+//         ) : (
+//           <div className="no-results">
+//             <h3>No shops found</h3>
+//             <button onClick={clearFilters}>Reset Filters</button>
+//           </div>
+//         )}
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default CustomerDashboard;
+
 import React, { useState, useEffect } from "react";
 import ShopCard from "./ShopCard";
-// import RestaurantCard from "./RestaurantCard";
 import "./CustomerDashboard.css";
 import { useAuth } from "../../context/AuthContext";
-// adjust path if needed
+import { getCategoryColors, getCategoryIcon, formatCategoryName } from "/utils/categoryColors";
 
 const CustomerDashboard = () => {
   const { token } = useAuth();
@@ -296,17 +497,6 @@ const CustomerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-
-  // Utility function to convert to Title Case
-
-  // Icons for categories
-  const categoryIcons = { 
-    food: "🍔",
-    grocery: "🛒",
-    fashion: "👕",
-    electronics: "📱",
-    beauty: "💄",
-  };
 
   // Fetch shops from API
   useEffect(() => {
@@ -353,7 +543,11 @@ const CustomerDashboard = () => {
         (shop) =>
           shop.name?.toLowerCase().includes(term) ||
           shop.address?.toLowerCase().includes(term) ||
-          shop.phone?.toLowerCase().includes(term)
+          shop.phone?.toLowerCase().includes(term) ||
+          shop.category?.toLowerCase().includes(term) ||
+          shop.products?.some(product =>
+            product.name?.toLowerCase().includes(term)
+          )
       );
     }
 
@@ -383,11 +577,17 @@ const CustomerDashboard = () => {
     ...new Set(shops.map((shop) => shop.category).filter(Boolean)),
   ];
 
+  // Count shops per category
+  const categoryCounts = {};
+  apiCategories.forEach(category => {
+    categoryCounts[category] = shops.filter(shop => shop.category === category).length;
+  });
+
   if (loading) {
     return (
       <div className="loading-shops">
         <div className="spinner"></div>
-        <p>Loading shops...</p>
+        <p>Loading restaurants...</p>
       </div>
     );
   }
@@ -401,68 +601,134 @@ const CustomerDashboard = () => {
       {/* Hero */}
       <div className="dashboard-hero">
         <div className="hero-content">
-          <h1>POS Marketplace</h1>
-          <p>Discover and order from local shops in your area</p>
+          <h1>Foodie POS Marketplace</h1>
+          <p>Discover and order from the best restaurants in your area</p>
           <div className="hero-stats">
             <div className="stat">
               <span className="stat-number">{shops.length}</span>
-              <span className="stat-label">Shops</span>
+              <span className="stat-label">Restaurants</span>
             </div>
             <div className="stat">
               <span className="stat-number">{totalProducts}</span>
-              <span className="stat-label">Products</span>
+              <span className="stat-label">Menu Items</span>
             </div>
-            <div className="stat">
+            {/* <div className="stat">
               <span className="stat-number">{averageRating}</span>
               <span className="stat-label">Avg Rating</span>
             </div>
+            <div className="stat">
+              <span className="stat-number">30</span>
+              <span className="stat-label">Min Delivery</span>
+            </div> */}
           </div>
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <div className="dashboard-controls">
         <div className="search-container">
           <div className="search-input-group">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Search shops..."
+              placeholder="Search restaurants, cuisine, or dishes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="clear-search"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
+          <button 
+            type="button" 
+            className="search-btn"
+            onClick={() => {}} // You can add search functionality here
+          >
+            Search
+          </button>
         </div>
 
-        {/* Categories */}
-        <div className="category-buttons">
-          <button
-            className={`category-btn ${
-              selectedCategory === "all" ? "active" : ""
-            }`}
-            onClick={() => setSelectedCategory("all")}
-          >
-            🏪 ALL
-          </button>
+        <div className="controls-row">
+          <div className="category-filter">
+            <h3>Cuisine Types</h3>
+            <div className="category-buttons">
+              <button
+                className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
+                onClick={() => setSelectedCategory("all")}
+                style={{
+                  '--category-color': '#6B7280',
+                  '--category-gradient': 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)'
+                }}
+              >
+                <span className="category-icon">🏪</span>
+                <span className="category-name">ALL</span>
+              </button>
 
-          {apiCategories.map((category) => (
+              {apiCategories.map((category) => {
+                const categoryColors = getCategoryColors(category);
+                const categoryIcon = getCategoryIcon(category);
+                const formattedCategory = formatCategoryName(category);
+                
+                return (
+                  <button
+                    key={category}
+                    className={`category-btn ${selectedCategory === category ? "active" : ""}`}
+                    onClick={() => setSelectedCategory(category)}
+                    style={{
+                      '--category-color': categoryColors.primary,
+                      '--category-gradient': categoryColors.gradient
+                    }}
+                  >
+                    <span className="category-icon">{categoryIcon}</span>
+                    <span className="category-name">{formattedCategory}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="filter-actions">
             <button
-              key={category}
-              className={`category-btn ${
-                selectedCategory === category ? "active" : ""
-              }`}
-              onClick={() => setSelectedCategory(category)}
+              onClick={clearFilters}
+              className="clear-filters-btn"
+              disabled={selectedCategory === "all" && !searchTerm}
+              aria-label="Clear all filters"
             >
-              {categoryIcons[category?.toLowerCase()] || "🍛"}{" "}
-              {category}
+              <span>✕</span>
+              Clear Filters
             </button>
-          ))}
+          </div>
         </div>
       </div>
 
-      {/* Results */}
+      {/* Results Section */}
       <div className="dashboard-results">
+        <div className="results-header">
+          <h2>
+            {selectedCategory === "all"
+              ? "All Restaurants"
+              : `${formatCategoryName(selectedCategory)} Restaurants`}
+            <span className="results-count"> ({filteredShops.length})</span>
+          </h2>
+
+          <div className="sort-options">
+            <select className="sort-select" aria-label="Sort results">
+              <option>Recommended</option>
+              <option>Rating: High to Low</option>
+              <option>Delivery: Fastest</option>
+              <option>Price: Low to High</option>
+            </select>
+          </div>
+        </div>
+
         {filteredShops.length > 0 ? (
           <div className="shops-grid">
             {filteredShops.map((shop) => (
@@ -471,10 +737,52 @@ const CustomerDashboard = () => {
           </div>
         ) : (
           <div className="no-results">
-            <h3>No shops found</h3>
-            <button onClick={clearFilters}>Reset Filters</button>
+            <div className="no-results-icon">🔍</div>
+            <h3>No restaurants found</h3>
+            <p>Try adjusting your search or filters</p>
+            <button onClick={clearFilters} className="reset-filters-btn">
+              Reset Filters
+            </button>
           </div>
         )}
+      </div>
+
+      {/* Featured Categories */}
+      <div className="featured-categories">
+        <h2>Explore by Cuisine</h2>
+        <div className="category-grid">
+          {apiCategories.map(category => {
+            const categoryColors = getCategoryColors(category);
+            const categoryIcon = getCategoryIcon(category);
+            const formattedCategory = formatCategoryName(category);
+            
+            return (
+              <div
+                key={category}
+                className="category-card"
+                onClick={() => setSelectedCategory(category)}
+                style={{
+                  '--category-color': categoryColors.primary,
+                  '--category-gradient': categoryColors.gradient
+                }}
+              >
+                <div className="category-card-icon">
+                  {categoryIcon}
+                </div>
+                <h4>{formattedCategory}</h4>
+                <p className="category-count">
+                  {categoryCounts[category]} restaurants
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Footer */}
+      <div className="dashboard-footer">
+        <p>© 2024 Foodie POS Marketplace. All rights reserved.</p>
+        <p>Fast delivery • Secure payments • 24/7 support</p>
       </div>
     </div>
   );

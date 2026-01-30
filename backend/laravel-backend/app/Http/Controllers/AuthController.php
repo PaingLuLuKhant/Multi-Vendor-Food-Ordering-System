@@ -41,6 +41,13 @@ class AuthController extends Controller
             ], Response::HTTP_UNAUTHORIZED);
         };
         $user = Auth::user();
+        // Block shop_owner and admin
+        if ($user->role !== 'customer') {
+            Auth::logout(); // optional safety
+            return response()->json([
+                'message' => 'You are not allowed', 
+            ], Response::HTTP_FORBIDDEN);
+        }
 
         $token = $user->createToken('token')->plainTextToken;
 

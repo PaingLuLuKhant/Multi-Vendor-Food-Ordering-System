@@ -24,6 +24,10 @@ class ShopResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    public static function getNavigationLabel(): string
+    {
+        return 'All Shops';
+    }
     public static function form(Schema $schema): Schema
     {
         return ShopForm::configure($schema);
