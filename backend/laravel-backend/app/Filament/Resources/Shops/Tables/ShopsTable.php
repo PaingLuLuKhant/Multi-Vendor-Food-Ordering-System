@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Shops\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -15,10 +16,17 @@ class ShopsTable
     {
         return $table
             ->columns([
-                TextColumn::make('user_id')
-                    ->numeric()
+                // TextColumn::make('user_id')
+                //     ->numeric()
+                //     ->sortable(),
+                TextColumn::make('owner.name')
+                    ->label('Owner')
+                    ->searchable()
                     ->sortable(),
                 TextColumn::make('name')
+                ->label('Shop Name')
+                    ->searchable(),
+                TextColumn::make('category')
                     ->searchable(),
                 TextColumn::make('phone')
                     ->searchable(),
@@ -26,8 +34,7 @@ class ShopsTable
                     ->searchable(),
                 TextColumn::make('description')
                     ->searchable(),
-                TextColumn::make('category')
-                    ->searchable(),
+                
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -42,7 +49,7 @@ class ShopsTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                // EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

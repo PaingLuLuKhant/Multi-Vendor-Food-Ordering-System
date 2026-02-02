@@ -1,11 +1,10 @@
 <x-filament::page class="overflow-hidden">
-    <h2 class="text-lg font-bold mb-6 text-center w-full">Shop Categories</h2>
 
     <div class="flex justify-center">
-        <x-filament::card style="width: 700px;">
-            <h3 class="text-md font-semibold mb-4 text-center">Shops by Category</h3>
+        <x-filament::card style="width: 650px;">
+            <h3 class="text-md font-semibold mb-4 text-center">Number of Shops by Category</h3>
             <!-- Fixed height container -->
-            <div style="width:100%; height:400px;">
+            <div style="width:100%; height:550px;">
                 <canvas id="shopCategoryChart"></canvas>
             </div>
         </x-filament::card>
@@ -20,39 +19,53 @@
 
         const ctx = document.getElementById('shopCategoryChart').getContext('2d');
 
-        const chartData = {
-            labels: ['Myanmar Food','Chinese Food','Thai Cuisine','Fast Foods','Italian Food','Seafood','Japanese Food','Vegan'],
-            datasets: [{
-                data: [5, 3, 7, 2, 4, 1, 2, 3],
-                backgroundColor: [
-                    '#f59e0b','#3b82f6','#10b981','#ef4444',
-                    '#8b5cf6','#14b8a6','#f43f5e','#eab308'
-                ],
-            }]
-        };
+        // Fetch real data from PHP
+        const chartData = @json($this->getCategoryChartData());
 
         new Chart(ctx, {
             type: 'pie',
-            data: chartData,
+            data: {
+                labels: chartData.labels,       // labels from DB
+                datasets: [{
+                    data: chartData.data,       // numbers from DB
+                    backgroundColor: [
+                        '#f59e0b', '#3b82f6', '#10b981', '#ef4444',
+                        '#8b5cf6', '#14b8a6', '#f43f5e', '#eab308'
+                    ],
+                }]
+            },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: 20 // reduces margin around pie
+                    padding: 20
                 },
                 plugins: {
-                    legend: { display: true, position: 'bottom' },
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: '#4bb543', // legend text color
+                            font: {
+                                size: 14,
+                                weight: 'bold'
+                            }
+                        }
+                    },
                     datalabels: {
                         color: '#fff',
-                        font: { weight: 'bold', size: 14 },
-                        formatter: (value, context) => context.chart.data.labels[context.dataIndex],
-                        anchor: 'center', // center inside slice
-                        align: 'center'
+                        font: { weight: 'bold', size: 18 },
+                        formatter: (value) => value, // show only number inside slice
+                        anchor: 'center',
+                        align: 'center',
+                        textStrokeColor: '#000',
+                        textStrokeWidth: 2
                     }
                 },
-                radius: '95%', // <-- make the pie fill almost the whole canvas
-                cutout: 0      // <-- full pie, not donut
+                radius: '95%',
+                cutout: 0
             }
         });
     </script>
+
 </x-filament::page>

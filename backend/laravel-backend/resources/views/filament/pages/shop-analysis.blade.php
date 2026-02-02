@@ -1,7 +1,5 @@
 <x-filament::page>
-    <h2 class="text-lg font-bold mb-6 text-center">
-        Shop Analysis Dashboard
-    </h2>
+    
 
     {{-- Shop chart --}}
     <x-filament::card class="mb-6"  style="width:700px;">

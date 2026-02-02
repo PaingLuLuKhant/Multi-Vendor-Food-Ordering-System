@@ -37,7 +37,7 @@ class UsersTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
+                // EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

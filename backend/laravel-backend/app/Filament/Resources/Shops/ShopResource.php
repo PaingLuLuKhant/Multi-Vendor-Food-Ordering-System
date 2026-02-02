@@ -54,7 +54,7 @@ class ShopResource extends Resource
     {
         return [
             'index' => ListShops::route('/'),
-            'create' => CreateShop::route('/create'),
+            // 'create' => CreateShop::route('/create'),
             'view' => ViewShop::route('/{record}'),
             'edit' => EditShop::route('/{record}/edit'),
         ];
@@ -62,11 +62,19 @@ class ShopResource extends Resource
     public static function canCreate(): bool
     {
         return auth()->user()->isAdmin();
+        // return false;
     }
     public static function shouldRegisterNavigation(): bool
     {
         return auth()->user()?->isAdmin();
     }
+    public static function canEdit($record): bool
+{
+    return false;
+}
+
+
+
     
 
 }

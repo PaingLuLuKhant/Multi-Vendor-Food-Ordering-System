@@ -35,34 +35,40 @@ class AdminStatsOverview extends StatsOverviewWidget
 
         return [
             Stat::make('Pending Shop Requests', 3)
-        ->description('Shops awaiting approval')
-        ->icon('heroicon-o-bell')  // <— use a Heroicon name
-        ->color('danger'),          // red color
-        Stat::make('Total Users', User::count())
-            ->description('All registered users')
-            ->icon('heroicon-o-users')
-            ->color('primary'),
+                ->description('Shops awaiting approval')
+                ->icon('heroicon-o-bell')  // <— use a Heroicon name
+                ->color('danger'),          // red color
 
-        Stat::make('Total Shops', Shop::count())
-            ->description('Active shops on platform')
-            ->icon('heroicon-o-building-storefront')
-            ->color('info'),
+            Stat::make('Total Users', User::count())
+                ->description('All registered users')
+                ->icon('heroicon-o-users')
+                ->color('info'),
 
-        Stat::make('Total Products', Product::count())
-            ->description('Products listed by shops')
-            ->icon('heroicon-o-cube')
-            ->color('warning'),
+            Stat::make('Total Customers', User::where('role', 'customer')->count())
+                ->description('All registered customers')
+                ->icon('heroicon-o-user')
+                ->color('info'),
 
-        Stat::make('Total Orders', Order::count())
-            ->description('Orders placed by customers')
-            ->icon('heroicon-o-shopping-bag')
-            ->color('info'),
+            Stat::make('Total Shops', Shop::count())
+                ->description('Active shops on platform')
+                ->icon('heroicon-o-building-storefront')
+                ->color('info'),
 
-        Stat::make('Platform Revenue', number_format($platformRevenue, 2))
-            ->description('15% commission from completed orders')
-            ->icon('heroicon-o-banknotes')
-            ->color('success'),
-    ];
+            Stat::make('Total Products', Product::count())
+                ->description('Products listed by shops')
+                ->icon('heroicon-o-cube')
+                ->color('primary'),
+
+            Stat::make('Total Orders', Order::count())
+                ->description('Orders placed by customers')
+                ->icon('heroicon-o-shopping-bag')
+                ->color('primary'),
+
+            Stat::make('Platform Revenue', '$'.number_format($platformRevenue, 2))
+                ->description('15% commission from all orders')
+                ->icon('heroicon-o-banknotes')
+                ->color('success'),
+        ];
     }
 
     public static function canView(): bool
