@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('shops', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('phone');
-            $table->string('address');
+            // Make these nullable so we can create a draft shop
+            $table->string('name')->nullable();
+            $table->string('phone')->nullable();
+            $table->string('address')->nullable();
             $table->string('description')->nullable();
-            $table->string('category');
+            $table->string('category')->nullable();
             $table->timestamps();
         });
     }

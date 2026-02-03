@@ -14,7 +14,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable ,HasApiTokens;
+    use HasFactory, Notifiable, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -26,9 +26,9 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'role',
         'password',
-    
+
     ];
-    
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -51,8 +51,14 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
-    public function shop() { return $this->hasOne(Shop::class); }
-    public function orders() { return $this->hasMany(Order::class); }
+    public function shop()
+    {
+        return $this->hasOne(Shop::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 
 
     public function isAdmin()
@@ -66,8 +72,25 @@ class User extends Authenticatable implements FilamentUser
     }
     public function canAccessPanel(Panel $panel): bool
     {
-        return in_array($this->role, ['admin', 'shop_owner']);
+        // return in_array($this->role, ['admin', 'shop_owner']);
+        if ($this->role === 'admin') {
+
+            return true; // Admin always has access
+        }
+        if ($this->role === 'shop_owner') {
+
+            // Allow panel access even if not approved,
+            // BUT we will restrict features elsewhere
+            return true;
+        }
+
+        return false;
     }
+    public function shopApproved(): bool
+    {
+        return optional($this->shop)->status === 'approved';
+    }
+
 
 }
 

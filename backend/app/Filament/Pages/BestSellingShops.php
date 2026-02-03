@@ -68,4 +68,9 @@ public function getTableRecords(): \Illuminate\Support\Collection
     {
         return [];
     }
+public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->role === 'admin';
+    }
+
 }

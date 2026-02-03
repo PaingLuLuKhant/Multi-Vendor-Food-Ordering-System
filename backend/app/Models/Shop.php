@@ -14,6 +14,7 @@ class Shop extends Model
         'address',
         'description',
         'category',
+        'status'
     ];
     public function products() { return $this->hasMany(Product::class); }
     public function owner() { return $this->belongsTo(User::class, 'user_id'); }

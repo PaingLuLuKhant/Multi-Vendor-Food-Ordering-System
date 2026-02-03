@@ -71,11 +71,16 @@ class OrdersResource extends Resource
     }
     public static function shouldRegisterNavigation(): bool
     {
-        return auth()->user()?->isAdmin();
+        return auth()->user()?->role === 'admin';
     }
     public static function canEdit($record): bool
 {
     return false; // disables editing completely
 }
+        public static function canViewAny(): bool
+    {
+        return auth()->user()->isAdmin();
+    }
+
 
 }

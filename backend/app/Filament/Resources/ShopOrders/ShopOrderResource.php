@@ -23,7 +23,7 @@ class ShopOrderResource extends Resource
     protected static ?string $model = Order::class;
 
     // Sidebar navigation
-    protected static string|UnitEnum|null $navigationGroup = 'Shop';
+    protected static string|UnitEnum|null $navigationGroup = 'Order';
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
     protected static ?string $recordTitleAttribute = 'id';
@@ -109,8 +109,13 @@ class ShopOrderResource extends Resource
     {
         return false;
     }
-    public static function canViewAny(): bool
+    // public static function canViewAny(): bool
+    // {
+    //     return auth()->user()->isShopOwner();
+    // }
+            public static function canAccess(): bool
     {
-        return auth()->user()->isShopOwner();
+        return auth()->user()->shopApproved();
     }
+
 }

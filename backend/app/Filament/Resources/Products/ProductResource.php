@@ -108,6 +108,11 @@ protected static string|UnitEnum|null $navigationGroup = 'Product';
         $user = auth()->user();
         return $user->isShopOwner() && $record->shop_id === $user->shop->id;
     }
+        public static function canAccess(): bool
+    {
+        return auth()->user()->shopApproved();
+    }
+
 
 
 }
