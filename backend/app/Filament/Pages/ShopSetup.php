@@ -55,6 +55,7 @@ class ShopSetup extends Page implements Forms\Contracts\HasForms
             'address' => $this->address,
             'description' => $this->description,
             'category' => $this->category,
+            'status'      => 'pending',
         ];
 
         // ✅ Update the shop model

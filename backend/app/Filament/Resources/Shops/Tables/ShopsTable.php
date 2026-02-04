@@ -9,6 +9,7 @@ use Filament\Actions\DeleteAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use PhpParser\Node\Stmt\Label;
 
 class ShopsTable
 {
@@ -19,6 +20,9 @@ class ShopsTable
                 // TextColumn::make('user_id')
                 //     ->numeric()
                 //     ->sortable(),
+                TextColumn::make('row_number')
+                ->rowIndex()
+                ->label('#'),
                 TextColumn::make('owner.name')
                     ->label('Owner')
                     ->searchable()
@@ -29,11 +33,14 @@ class ShopsTable
                 TextColumn::make('category')
                     ->searchable(),
                 TextColumn::make('phone')
+                    ->label('Phone No')
+                    ->searchable(),
+                TextColumn::make('description')
+                ->label('Shop Description')
                     ->searchable(),
                 TextColumn::make('address')
                     ->searchable(),
-                TextColumn::make('description')
-                    ->searchable(),
+                
                 
                 TextColumn::make('created_at')
                     ->dateTime()
@@ -44,17 +51,18 @@ class ShopsTable
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->filters([
-                //
-            ])
+
             ->recordActions([
                 ViewAction::make(),
                 // EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
+
+            // bulk delete option
+
+            // ->toolbarActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make(),
+            //     ]),
+            // ]);
     }
 }

@@ -15,14 +15,18 @@ class ProductsTable
     {
         return $table
             ->columns([
-                TextColumn::make('shop_id')
-                    ->numeric()
-                    ->sortable(),
+                // TextColumn::make('shop_id')
+                //     ->numeric()
+                //     ->sortable(),
+                TextColumn::make('row_number')
+                    ->rowIndex()
+                    ->label('#'),
                 TextColumn::make('name')
+                    ->label("Product name")
                     ->searchable(),
                 TextColumn::make('price')
-                    ->money()
-                    ->sortable(),
+                    ->label('Price')
+                    ->money('MMK'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -38,11 +42,7 @@ class ProductsTable
             ->recordActions([
                 ViewAction::make(),
                 EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
+            
     }
 }

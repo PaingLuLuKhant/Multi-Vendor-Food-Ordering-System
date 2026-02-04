@@ -18,7 +18,6 @@ class Product extends Model
         'created_at',
     ];
     public function shop() { return $this->belongsTo(Shop::class); }
-    public function stock() { return $this->hasOne(ProductStock::class); }
 
     // new addition 20.1.26
         public function orderItems()

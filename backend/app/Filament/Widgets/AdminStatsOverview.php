@@ -34,7 +34,7 @@ class AdminStatsOverview extends StatsOverviewWidget
         // ];
 
         return [
-            Stat::make('Pending Shop Requests', 3)
+            Stat::make('Pending Shop Requests', Shop::where('status', 'pending')->count())
                 ->description('Shops awaiting approval')
                 ->icon('heroicon-o-bell')  // <— use a Heroicon name
                 ->color('danger'),          // red color
@@ -64,7 +64,7 @@ class AdminStatsOverview extends StatsOverviewWidget
                 ->icon('heroicon-o-shopping-bag')
                 ->color('primary'),
 
-            Stat::make('Platform Revenue', '$'.number_format($platformRevenue, 2))
+            Stat::make('Platform Revenue', 'K '.number_format($platformRevenue))
                 ->description('15% commission from all orders')
                 ->icon('heroicon-o-banknotes')
                 ->color('success'),

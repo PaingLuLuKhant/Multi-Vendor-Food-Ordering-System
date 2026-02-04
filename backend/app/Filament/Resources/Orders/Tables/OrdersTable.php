@@ -21,9 +21,19 @@ class OrdersTable
             ->columns([
                 TextColumn::make('id')->label('Order ID')->sortable(),
                 TextColumn::make('user.name')->label('Customer')->sortable()->searchable(),
-                TextColumn::make('total_amount')->sortable(),
+                // TextColumn::make('total_amount')->sortable(),
+                TextColumn::make('total_amount')
+                    ->money('MMK'),
                 TextColumn::make('status')->sortable(),
-                TextColumn::make('created_at')->dateTime()->sortable(),
+                TextColumn::make('created_at')
+                    ->label('Ordered at')
+                    ->formatStateUsing(
+                        fn($state) =>
+                        \Carbon\Carbon::parse($state)->diffForHumans([
+                            'short' => true,
+                        ])
+                    )
+                    ->sortable(),
             ])
             ->filters([
                 // TrashedFilter::make(),
@@ -31,13 +41,13 @@ class OrdersTable
             ->recordActions([
                 ViewAction::make(),
                 // EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                ]),
             ]);
+            // ->toolbarActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make(),
+            //         ForceDeleteBulkAction::make(),
+            //         RestoreBulkAction::make(),
+            //     ]),
+            // ]);
     }
 }

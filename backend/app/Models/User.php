@@ -92,6 +92,11 @@ class User extends Authenticatable implements FilamentUser
     }
 
 
+    public function shopRatings()
+    {
+        return $this->hasMany(\App\Models\ShopRating::class);
+    }
+
 }
 
 

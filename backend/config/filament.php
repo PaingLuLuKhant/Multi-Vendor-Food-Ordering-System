@@ -1,7 +1,7 @@
 <?php
 
 return [
-
+    'name' => env('APP_NAME', 'Hungry Hub'), // <-- Add this line
     /*
     |--------------------------------------------------------------------------
     | Broadcasting

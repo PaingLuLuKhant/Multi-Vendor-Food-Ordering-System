@@ -115,7 +115,8 @@ class ShopOrderResource extends Resource
     // }
             public static function canAccess(): bool
     {
-        return auth()->user()->shopApproved();
+        // return auth()->user()->shopApproved();
+        return auth()->user()->shop?->status === 'approved';
     }
 
 }

@@ -18,6 +18,9 @@ class ShopOrdersTable
     {
         return $table
             ->columns([
+                TextColumn::make('row_number')
+                    ->rowIndex()
+                    ->label('#'),
                 // Customer name
                 TextColumn::make('user.name')
                     ->label('Customer')
@@ -33,11 +36,13 @@ class ShopOrdersTable
                         $shopIds = Shop::where('user_id', $userId)->pluck('id');
 
                         return $record->orderItems
-                            ->filter(fn ($item) =>
+                            ->filter(
+                                fn($item) =>
                                 $item->product &&
                                 $shopIds->contains($item->product->shop_id)
                             )
-                            ->map(fn ($item) =>
+                            ->map(
+                                fn($item) =>
                                 $item->product->name . ' x ' . $item->quantity
                             )
                             ->join(', ');
@@ -47,22 +52,29 @@ class ShopOrdersTable
                 // ✅ Total ONLY from this shop
                 TextColumn::make('shop_total_amount')
                     ->label('Total amount')
-                    ->money('USD')
+                    ->money('MMK')
                     ->getStateUsing(function ($record) {
                         $userId = Auth::id();
 
                         $shopIds = Shop::where('user_id', $userId)->pluck('id');
 
                         return $record->orderItems
-                            ->filter(fn ($item) =>
+                            ->filter(
+                                fn($item) =>
                                 $item->product &&
                                 $shopIds->contains($item->product->shop_id)
                             )
-                            ->sum(fn ($item) =>
+                            ->sum(
+                                fn($item) =>
                                 $item->price * $item->quantity
                             );
                     })
                     ->sortable(),
+
+                TextColumn::make('id')
+                    ->label('Order ID')
+                    ->sortable()
+                    ->searchable(),
 
                 // Status
                 TextColumn::make('status')
@@ -75,9 +87,18 @@ class ShopOrdersTable
                     ])
                     ->sortable(),
 
-                // Created time
+                // TextColumn::make('created_at')
+                // ->label('Ordered at')
+                //     ->dateTime()
+                //     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Ordered at')
+                    ->formatStateUsing(
+                        fn($state) =>
+                        \Carbon\Carbon::parse($state)->diffForHumans([
+                            'short' => true,
+                        ])
+                    )
                     ->sortable(),
             ])
             ->filters([
@@ -90,12 +111,8 @@ class ShopOrdersTable
             ])
             ->recordActions([
                 ViewAction::make(),
-                EditAction::make(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
+                // EditAction::make(),
             ]);
+
     }
 }

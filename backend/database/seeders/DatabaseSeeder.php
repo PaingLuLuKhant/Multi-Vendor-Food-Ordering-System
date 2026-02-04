@@ -120,9 +120,9 @@ class DatabaseSeeder extends Seeder
             $productNames = $productsByCategory[$shop->category] ?? ['Generic Product'];
 
             foreach ($productNames as $productName) {
-                \App\Models\Product::create([
+                Product::create([
                     'name' => $productName,
-                    'price' => fake()->numberBetween(5, 100),
+                    'price' => fake()->numberBetween(1500, 10000),
                     'shop_id' => $shop->id,
                 ]);
             }
