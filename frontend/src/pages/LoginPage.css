@@ -1,26 +1,26 @@
-/* ========== Login Page Styles - Improved Version ========== */
+/* ========== Login Page Styles - BLACK & WHITE VERSION ========== */
 :root {
-  --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  --secondary-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-  --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  --primary-gradient: linear-gradient(135deg, #666666 0%, #333333 100%);
+  --secondary-gradient: linear-gradient(135deg, #555555 0%, #222222 100%);
+  --success-gradient: linear-gradient(135deg, #888888 0%, #555555 100%);
+  --warning-gradient: linear-gradient(135deg, #777777 0%, #444444 100%);
+  --danger-gradient: linear-gradient(135deg, #999999 0%, #666666 100%);
   
-  --primary-color: #667eea;
-  --primary-dark: #5a67d8;
-  --text-primary: #1a1a1a;
-  --text-secondary: #666;
-  --text-light: #94a3b8;
-  --border-light: #e2e8f0;
-  --border-medium: #cbd5e1;
+  --primary-color: #333333;
+  --primary-dark: #1a1a1a;
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --text-light: #777777;
+  --border-light: #e0e0e0;
+  --border-medium: #cccccc;
   --bg-white: #ffffff;
-  --bg-gray: #f8fafc;
-  --bg-dark: #1e293b;
+  --bg-gray: #f8f8f8;
+  --bg-dark: #1a1a1a;
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
   --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  --shadow-primary: 0 10px 25px rgba(102, 126, 234, 0.3);
+  --shadow-primary: 0 10px 25px rgba(51, 51, 51, 0.3);
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
@@ -33,7 +33,7 @@
 /* ========== Base Styles ========== */
 .login-page {
   min-height: 100vh;
-  background: var(--primary-gradient);
+  background: linear-gradient(135deg, white 0%, grey 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -67,7 +67,7 @@
 
 /* ========== Left Side - Hero Section ========== */
 .login-left {
-  background: var(--secondary-gradient);
+  background: linear-gradient(135deg, #444444 0%, #222222 100%);
   color: white;
   padding: 4rem 3rem;
   display: flex;
@@ -85,7 +85,7 @@
   width: 100%;
   height: 200%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-  opacity: 0.5;
+  opacity: 0.3;
 }
 
 .login-brand {
@@ -100,6 +100,7 @@
   margin-bottom: 1.5rem;
   display: inline-block;
   animation: float 3s ease-in-out infinite;
+  filter: grayscale(100%);
 }
 
 @keyframes float {
@@ -116,7 +117,7 @@
   margin-bottom: 0.75rem;
   font-weight: 800;
   letter-spacing: -0.025em;
-  background: linear-gradient(to right, #ffffff, #e2e8f0);
+  background: linear-gradient(to right, #ffffff, #e0e0e0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -129,6 +130,7 @@
   margin: 0 auto;
   line-height: 1.6;
   font-weight: 300;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .login-features {
@@ -172,6 +174,7 @@
   justify-content: center;
   width: 56px;
   height: 56px;
+  filter: grayscale(100%);
 }
 
 .feature-text h3 {
@@ -214,7 +217,7 @@
   font-size: 2rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
-  background: linear-gradient(to right, #ffffff, #cbd5e1);
+  background: linear-gradient(to right, #ffffff, #e0e0e0);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -281,15 +284,16 @@
 }
 
 .alert-error {
-  background: linear-gradient(to right, #fef2f2, #fff5f5);
-  border: 1px solid #fecaca;
-  border-left-color: #ef4444;
-  color: #dc2626;
+  background: linear-gradient(to right, #f0f0f0, #f8f8f8);
+  border: 1px solid #cccccc;
+  border-left-color: #666666;
+  color: #333333;
 }
 
 .alert-icon {
   font-size: 1.25rem;
   flex-shrink: 0;
+  filter: grayscale(100%);
 }
 
 .alert-text {
@@ -337,13 +341,13 @@
 .form-input:focus {
   outline: none;
   border-color: var(--primary-color);
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+  box-shadow: 0 0 0 4px rgba(51, 51, 51, 0.15);
   transform: translateY(-1px);
 }
 
 .form-input.error {
-  border-color: #ef4444;
-  background: linear-gradient(to right, #fef2f2, transparent);
+  border-color: #666666;
+  background: linear-gradient(to right, #f0f0f0, transparent);
   animation: shake 0.4s ease-in-out;
 }
 
@@ -397,7 +401,7 @@
 .error-message {
   display: block;
   margin-top: 0.5rem;
-  color: #ef4444;
+  color: #333333;
   font-size: 0.875rem;
   font-weight: 500;
   animation: fadeIn 0.3s ease-out;
@@ -434,6 +438,7 @@
 
 .checkbox-label input[type="checkbox"]:checked {
   transform: scale(1.1);
+  background-color: #333333;
 }
 
 .forgot-password {
@@ -460,7 +465,7 @@
   cursor: not-allowed;
 }
 
-/* Login Button */
+/* Login Button - Black & White */
 .login-btn {
   width: 100%;
   padding: 1rem 2rem;
@@ -582,7 +587,7 @@
 }
 
 .shop-owner-link {
-  color: #7c3aed;
+  color: #444444;
   font-weight: 700;
 }
 
@@ -711,64 +716,64 @@
   }
   
   .form-header h2 {
-    color: #f1f5f9;
+    color: #ffffff;
   }
   
   .form-header p {
-    color: #94a3b8;
+    color: #aaaaaa;
   }
   
   .form-label {
-    color: #e2e8f0;
+    color: #e0e0e0;
   }
   
   .form-input {
-    background: #0f172a;
-    border-color: #334155;
-    color: #f1f5f9;
+    background: #0a0a0a;
+    border-color: #333333;
+    color: #ffffff;
   }
   
   .form-input:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.25);
+    box-shadow: 0 0 0 4px rgba(51, 51, 51, 0.25);
   }
   
   .form-input.error {
-    background: linear-gradient(to right, rgba(127, 29, 29, 0.1), transparent);
+    background: linear-gradient(to right, rgba(51, 51, 51, 0.1), transparent);
   }
   
   .checkbox-label {
-    color: #cbd5e1;
+    color: #cccccc;
   }
   
   .forgot-password {
-    color: #93c5fd;
+    color: #aaaaaa;
   }
   
   .forgot-password:hover {
-    background: #1e293b;
+    background: #1a1a1a;
   }
   
   .register-link {
-    background: #0f172a;
-    border-color: #1e293b;
+    background: #0a0a0a;
+    border-color: #1a1a1a;
   }
   
   .register-link p {
-    color: #94a3b8;
+    color: #aaaaaa;
   }
   
   .register-link .link {
-    color: #93c5fd;
+    color: #aaaaaa;
   }
   
   .login-footer {
-    color: #64748b;
-    border-top-color: #334155;
+    color: #777777;
+    border-top-color: #333333;
   }
   
   .footer-link:hover {
-    background: #0f172a;
+    background: #0a0a0a;
   }
 }
 

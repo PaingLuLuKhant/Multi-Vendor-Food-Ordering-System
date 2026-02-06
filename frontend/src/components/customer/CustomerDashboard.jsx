@@ -1,294 +1,11 @@
-// import React, { useState, useEffect } from "react";
-// // import { shops, categories } from "../../data/shopsData";
-// import ShopCard from "./ShopCard";
-// import "./CustomerDashboard.css";
-
-// const CustomerDashboard = () => {
-//     const [searchTerm, setSearchTerm] = useState("");
-//     const [selectedCategory, setSelectedCategory] = useState("all");
-
-//     const [shops, setShops] = useState([]);
-//     const [filteredShops, setFilteredShops] = useState(shops);
-//     const [loading, setLoading] = useState(true);
-//     const [error, setError] = useState(null);
-
-//     const categoryIcons = {
-//         food: "🍔",
-//         grocery: "🛒",
-//         fashion: "👕",
-//         electronics: "📱",
-//         beauty: "💄",
-//     };
-
-//     const apiCategories = [...new Set(shops.map(shop => shop.category))];
-//     const token = localStorage.getItem("token");
-
-//     useEffect(() => {
-//         const fetchShops = async () => {
-//             try {
-//                 const res = await fetch("http://127.0.0.1:8000/api/shops", {
-//                     headers: {
-//                         Accept: "application/json",
-//                         Authorization: `Bearer ${token}`,
-//                     },
-//                 });
-
-//                 if (!res.ok) {
-//                     throw new Error("Failed to fetch shops");
-//                 }
-
-//                 const data = await res.json();
-//                 console.log(data)
-//                 setShops(data.shops);
-
-//             } catch (err) {
-//                 console.error(err);
-//                 setError(err.message);
-//             } finally {
-//                 setLoading(false);
-//             }
-//         };
-//         fetchShops();
-
-//     }, [token]);
-
-//     useEffect(() => {
-//         let filtered = shops;
-
-//         // Filter by category
-//         if (selectedCategory !== "all") {
-//             filtered = filtered.filter(shop => shop.category === selectedCategory);
-//         }
-
-//         // Filter by search term
-//         if (searchTerm.trim() !== "") {
-//             const term = searchTerm.toLowerCase();
-//             filtered = filtered.filter(
-//                 shop =>
-//                     shop.name.toLowerCase().includes(term) ||
-//                     shop.address.toLowerCase().includes(term) ||
-//                     shop.phone.toLowerCase().includes(term)
-//             );
-//         }
-
-//         setFilteredShops(filtered);
-//     }, [shops, searchTerm, selectedCategory]);
-
-//     if (loading) {
-//         return (
-//             <div className="loading-shops">
-//                 <div className="spinner"></div>
-//                 <p>Loading shops...</p>
-//             </div>
-//         );
-//     }
-
-//     const handleSearch = (e) => {
-//         e.preventDefault();
-//         // Search is already handled by useEffect
-//     };
-
-//     const clearFilters = () => {
-//         setSelectedCategory("all");
-//         setSearchTerm("");
-//     };
-
-//     // Calculate total products across all shops
-//     const totalProducts = shops.reduce((total, shop) => total + shop.products.length, 0);
-
-//     // Calculate average rating across all shops
-//     const averageRating = (shops.reduce((total, shop) => total + shop.rating, 0) / shops.length).toFixed(1);
-
-//     return (
-//         <div className="customer-dashboard">
-//             {/* Hero Section */}
-//             <div className="dashboard-hero">
-//                 <div className="hero-content">
-//                     <h1>POS Marketplace</h1>
-//                     <p>Discover and order from local shops in your area</p>
-//                     <div className="hero-stats">
-//                         <div className="stat">
-//                             <span className="stat-number">{shops.length}</span>
-//                             <span className="stat-label">Shops</span>
-//                         </div>
-//                         <div className="stat">
-//                             <span className="stat-number">{totalProducts}</span>
-//                             <span className="stat-label">Products</span>
-//                         </div>
-//                         <div className="stat">
-//                             <span className="stat-number">{averageRating}</span>
-//                             <span className="stat-label">Avg Rating</span>
-//                         </div>
-//                         <div className="stat">
-//                             <span className="stat-number">30</span>
-//                             <span className="stat-label">Min Delivery</span>
-//                         </div>
-//                     </div>
-//                 </div>
-//             </div>
-
-//             {/* Controls Section */}
-//             <div className="dashboard-controls">
-//                 <form onSubmit={handleSearch} className="search-container">
-//                     <div className="search-input-group">
-//                         <span className="search-icon">🔍</span>
-//                         <input
-//                             type="text"
-//                             placeholder="Search shops, products, or categories..."
-//                             value={searchTerm}
-//                             onChange={(e) => setSearchTerm(e.target.value)}
-//                             className="search-input"
-//                         />
-//                         {searchTerm && (
-//                             <button
-//                                 type="button"
-//                                 onClick={() => setSearchTerm("")}
-//                                 className="clear-search"
-//                                 aria-label="Clear search"
-//                             >
-//                                 ✕
-//                             </button>
-//                         )}
-//                     </div>
-//                     <button type="submit" className="search-btn">Search</button>
-//                 </form>
-
-//                 <div className="controls-row">
-//                     <div className="controls-row">
-//                         <div className="category-filter">
-//                             <h3>Categories</h3>
-//                             <div className="category-buttons">
-
-//                                 {/* ALL */}
-//                                 <button
-//                                     className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
-//                                     onClick={() => setSelectedCategory("all")}
-//                                 >
-//                                     <span className="category-icon">🏪</span>
-//                                     <span className="category-name">ALL</span>
-//                                 </button>
-
-//                                 {/* FROM API */}
-//                                 {apiCategories.map(category => (
-//                                     <button
-//                                         key={category}
-//                                         className={`category-btn ${selectedCategory === category ? "active" : ""}`}
-//                                         onClick={() => setSelectedCategory(category)}
-//                                     >
-//                                         <span className="category-icon">
-//                                             {categoryIcons[category.toLowerCase()] || "🏪"}
-//                                         </span>
-//                                         <span className="category-name">{category.toUpperCase()}</span>
-//                                     </button>
-//                                 ))}
-
-//                             </div>
-//                         </div>
-
-//                     </div>
-
-//                     <div className="filter-actions">
-//                         <button
-//                             onClick={clearFilters}
-//                             className="clear-filters-btn"
-//                             disabled={selectedCategory === "all" && !searchTerm}
-//                             aria-label="Clear all filters"
-//                         >
-//                             <span>✕</span>
-//                             Clear Filters
-//                         </button>
-//                     </div>
-//                 </div>
-//             </div>
-
-//             {/* Results Section */}
-//             <div className="dashboard-results">
-//                 <div className="results-header">
-//                     <h2>
-//                         {selectedCategory === "all"
-//                             ? "All Shops"
-//                             : `${selectedCategory} Shops`}
-//                         <span className="results-count"> ({filteredShops.length})</span>
-//                     </h2>
-
-//                     <div className="sort-options">
-//                         <select className="sort-select" aria-label="Sort results">
-//                             <option>Recommended</option>
-//                             <option>Rating: High to Low</option>
-//                             <option>Delivery: Fastest</option>
-//                             <option>Price: Low to High</option>
-//                         </select>
-//                     </div>
-//                 </div>
-
-//                 {loading ? (
-//                     <div className="loading-shops">
-//                         <div className="spinner"></div>
-//                         <p>Finding shops...</p>
-//                     </div>
-//                 ) : filteredShops.length > 0 ? (
-//                     <div className="shops-grid">
-//                         {filteredShops.map((shop) => (
-//                             <ShopCard
-//                                 key={shop.id}
-//                                 shop={shop}
-//                             />
-//                         ))}
-//                     </div>
-//                 ) : (
-//                     <div className="no-results">
-//                         <div className="no-results-icon">🔍</div>
-//                         <h3>No shops found</h3>
-//                         <p>Try adjusting your search or filters</p>
-//                         <button onClick={clearFilters} className="reset-filters-btn">
-//                             Reset Filters
-//                         </button>
-//                     </div>
-//                 )}
-//             </div>
-
-//             {/* Featured Categories */}
-//             <div className="featured-categories">
-//                 <h2>Shop by Category</h2>
-//                 <div className="category-grid">
-//                     {apiCategories.map(category => (
-//                         <div
-//                             key={category}
-//                             className="category-card"
-//                             onClick={() => setSelectedCategory(category)}
-//                         >
-//                             <div className="category-card-icon">
-//                                 {categoryIcons[category.toLowerCase()] || "🏪"}
-//                             </div>
-//                             <h4>{category}</h4>
-//                             <p className="category-count">
-//                                 {shops.filter(s => s.category === category).length} shops
-//                             </p>
-//                         </div>
-//                     ))}
-//                 </div>
-//             </div>
-
-//             {/* Footer */}
-//             <div className="dashboard-footer">
-//                 <p>© 2026 POS Marketplace. All rights reserved.</p>
-//                 <p>Fast delivery • Secure payments • 24/7 support</p>
-//             </div>
-//         </div>
-//     );
-// };
-
-// export default CustomerDashboard;
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ShopCard from "./ShopCard";
-// import RestaurantCard from "./RestaurantCard";
 import "./CustomerDashboard.css";
 import { useAuth } from "../../context/AuthContext";
-// adjust path if needed
+import { getCategoryColors, getCategoryIcon, formatCategoryName } from "/utils/categoryColors";
 
 const CustomerDashboard = () => {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [shops, setShops] = useState([]);
   const [filteredShops, setFilteredShops] = useState([]);
@@ -296,104 +13,299 @@ const CustomerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  // New state for favorites
+  const [favoriteShops, setFavoriteShops] = useState([]);
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+  const [loadingFavorites, setLoadingFavorites] = useState(false);
+  const [favoriteStatuses, setFavoriteStatuses] = useState({});
 
-  // Utility function to convert to Title Case
-
-  // Icons for categories
-  const categoryIcons = { 
-    food: "🍔",
-    grocery: "🛒",
-    fashion: "👕",
-    electronics: "📱",
-    beauty: "💄",
-  };
+  // Ref for scrolling to shops section
+  const shopsGridRef = useRef(null);
+  
+  // Track scroll after category click
+  const [shouldScroll, setShouldScroll] = useState(false);
 
   // Fetch shops from API
   useEffect(() => {
     const fetchShops = async () => {
       try {
+        console.log("Fetching shops...");
         const res = await fetch("http://127.0.0.1:8000/api/shops", {
+          headers: {
+            Accept: "application/json",
+            Authorization: token ? `Bearer ${token}` : undefined,
+          },
+        });
+
+        console.log("Response status:", res.status);
+        
+        if (!res.ok) {
+          throw new Error(`Failed to fetch shops. Status: ${res.status}`);
+        }
+
+        const data = await res.json();
+        console.log("Shops data received:", data);
+        
+        const shopsData = data.shops || [];
+
+        setShops(shopsData);
+        setFilteredShops(shopsData);
+
+              } catch (err) {
+                console.error("Error fetching shops:", err);
+                setError(err.message);
+              } finally {
+                setLoading(false);
+              }
+            };
+
+            fetchShops();
+          }, [token]);
+
+  // Fetch user's favorite shops
+  useEffect(() => {
+    const fetchFavorites = async () => {
+      if (!user?.id || !token) return;
+      
+      setLoadingFavorites(true);
+      try {
+        console.log("Fetching favorites for user:", user.id);
+      const res = await fetch("http://127.0.0.1:8000/api/user/favorites", {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
           },
         });
 
-        if (!res.ok) {
-          throw new Error("Failed to fetch shops");
+        console.log("Favorites response status:", res.status);
+        
+        if (res.ok) {
+          const data = await res.json();
+          console.log("Favorites data:", data);
+          
+          if (data.success) {
+            const favoriteIds = data.favorite_ids || data.favorites?.map(fav => fav.shop_id || fav.id) || [];
+            setFavoriteShops(favoriteIds);
+            
+            // Create a lookup object for favorite statuses
+            const statuses = {};
+            favoriteIds.forEach(id => {
+              statuses[id] = true;
+            });
+            setFavoriteStatuses(statuses);
+          }
+        } else {
+          console.warn("Failed to fetch favorites, using local state");
         }
-
-        const data = await res.json();
-        setShops(data.shops || []);
-        setFilteredShops(data.shops || []);
       } catch (err) {
-        console.error(err);
-        setError(err.message);
+        console.error("Failed to fetch favorites:", err);
       } finally {
-        setLoading(false);
+        setLoadingFavorites(false);
       }
     };
 
-    fetchShops();
-  }, [token]);
+    fetchFavorites();
+  }, [user, token]);
 
-  // Filter logic
+  // Toggle favorite status for a shop - FIXED ENDPOINT
+  const toggleFavorite = async (shopId) => {
+    console.log("Toggling favorite for shop:", shopId);
+    console.log("User:", user);
+    console.log("Token exists:", !!token);
+    
+    if (!user?.id || !token) {
+      alert("Please login to save favorites");
+      return;
+    }
+
+    const isCurrentlyFavorite = favoriteStatuses[shopId] || false;
+
+    // Optimistic update
+    const newFavoriteStatuses = { ...favoriteStatuses };
+    if (isCurrentlyFavorite) {
+      newFavoriteStatuses[shopId] = false;
+      setFavoriteShops(prev => prev.filter(id => id !== shopId));
+    } else {
+      newFavoriteStatuses[shopId] = true;
+      setFavoriteShops(prev => [...prev, shopId]);
+    }
+    setFavoriteStatuses(newFavoriteStatuses);
+
+    try {
+      // ✅ FIXED: Use the correct endpoint from your FavoritesController
+      const url = `http://127.0.0.1:8000/api/user/favorites/${shopId}/toggle`;
+      console.log("Making request to:", url);
+      
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest"
+        },
+      });
+
+      console.log("Toggle response status:", res.status);
+      
+      // Handle 401 unauthorized
+      if (res.status === 401) {
+        throw new Error("Please login to favorite shops. Status: 401");
+      }
+      
+      // Handle other errors
+      if (!res.ok) {
+        throw new Error(`Server error: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log("Toggle response data:", data);
+      
+      if (!data.success) {
+        throw new Error(data.error || data.message || "Failed to update favorite");
+      }
+      
+      console.log("Toggle successful:", data);
+      
+      // Update the shops array with new favorite status
+      setShops(prevShops => 
+        prevShops.map(shop => 
+          shop.id === shopId 
+            ? { ...shop, is_favorite: data.is_favorite }
+            : shop
+        )
+      );
+      
+      // Update local state with the server response
+      setFavoriteStatuses(prev => ({
+        ...prev,
+        [shopId]: data.is_favorite
+      }));
+      
+      if (data.is_favorite) {
+        setFavoriteShops(prev => [...new Set([...prev, shopId])]);
+      } else {
+        setFavoriteShops(prev => prev.filter(id => id !== shopId));
+      }
+      
+    } catch (err) {
+      console.error("Failed to update favorite:", err);
+      
+      // Revert optimistic update on error
+      const revertedStatuses = { ...favoriteStatuses };
+      revertedStatuses[shopId] = isCurrentlyFavorite;
+      setFavoriteStatuses(revertedStatuses);
+      
+      if (isCurrentlyFavorite) {
+        setFavoriteShops(prev => [...prev, shopId]);
+      } else {
+        setFavoriteShops(prev => prev.filter(id => id !== shopId));
+      }
+      
+      alert(`${err.message}. Please try again.`);
+    }
+  };
+
+  // Filter logic - updated to include favorites filter
   useEffect(() => {
     let filtered = [...shops];
 
     if (selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (shop) => shop.category === selectedCategory
-      );
+      filtered = filtered.filter(shop => shop.category === selectedCategory);
     }
 
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
-        (shop) =>
+        shop =>
           shop.name?.toLowerCase().includes(term) ||
           shop.address?.toLowerCase().includes(term) ||
-          shop.phone?.toLowerCase().includes(term)
+          shop.phone?.toLowerCase().includes(term) ||
+          shop.category?.toLowerCase().includes(term) ||
+          (shop.products && shop.products.some(product =>
+            product.name?.toLowerCase().includes(term)
+          ))
       );
     }
 
+    // Apply favorites filter
+    if (showFavoritesOnly) {
+      filtered = filtered.filter(shop => favoriteStatuses[shop.id]);
+    }
+
     setFilteredShops(filtered);
-  }, [shops, selectedCategory, searchTerm]);
+
+    if (shouldScroll && shopsGridRef.current) {
+      setTimeout(() => {
+        shopsGridRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 100);
+      setShouldScroll(false);
+    }
+  }, [shops, selectedCategory, searchTerm, shouldScroll, showFavoritesOnly, favoriteStatuses]);
+
+  const handleCategoryCardClick = (category) => {
+    setSelectedCategory(category);
+    setSearchTerm("");
+    setShowFavoritesOnly(false);
+    setShouldScroll(true);
+  };
+
+  const handleCategoryButtonClick = (category) => {
+    setSelectedCategory(category);
+    setSearchTerm("");
+    setShowFavoritesOnly(false);
+    setShouldScroll(true);
+  };
 
   const clearFilters = () => {
     setSelectedCategory("all");
     setSearchTerm("");
+    setShowFavoritesOnly(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Stats (safe)
-  const totalProducts = shops.reduce(
-    (total, shop) => total + (shop.products ? shop.products.length : 0),
-    0
-  );
+  const toggleFavoritesFilter = () => {
+    setShowFavoritesOnly(!showFavoritesOnly);
+    if (!showFavoritesOnly) {
+      setSelectedCategory("all");
+      setSearchTerm("");
+    }
+    setShouldScroll(true);
+  };
 
-  const averageRating =
-    shops.length > 0
-      ? (
-          shops.reduce((total, shop) => total + (shop.rating || 0), 0) /
-          shops.length
-        ).toFixed(1)
-      : "0.0";
+  const totalProducts = shops.reduce((total, shop) => total + (shop.products?.length || 0), 0);
 
-  const apiCategories = [
-    ...new Set(shops.map((shop) => shop.category).filter(Boolean)),
-  ];
+  const apiCategories = [...new Set(shops.map(shop => shop.category).filter(Boolean))];
+
+  // Count shops per category
+  const categoryCounts = {};
+  apiCategories.forEach(category => {
+    categoryCounts[category] = shops.filter(shop => shop.category === category).length;
+  });
 
   if (loading) {
     return (
       <div className="loading-shops">
         <div className="spinner"></div>
-        <p>Loading shops...</p>
+        <p>Loading restaurants...</p>
       </div>
     );
   }
 
   if (error) {
-    return <p style={{ color: "red", textAlign: "center" }}>{error}</p>;
+    return (
+      <div className="error-container">
+        <h2>Error Loading Restaurants</h2>
+        <p>{error}</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="retry-button"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   return (
@@ -401,79 +313,222 @@ const CustomerDashboard = () => {
       {/* Hero */}
       <div className="dashboard-hero">
         <div className="hero-content">
-          <h1>POS Marketplace</h1>
-          <p>Discover and order from local shops in your area</p>
+          <h1>Hungry Hub</h1>
+          <p>Discover and order from the best restaurants in your area</p>
           <div className="hero-stats">
             <div className="stat">
               <span className="stat-number">{shops.length}</span>
-              <span className="stat-label">Shops</span>
+              <span className="stat-label">Restaurants</span>
             </div>
             <div className="stat">
               <span className="stat-number">{totalProducts}</span>
-              <span className="stat-label">Products</span>
+              <span className="stat-label">Menu Items</span>
             </div>
             <div className="stat">
-              <span className="stat-number">{averageRating}</span>
-              <span className="stat-label">Avg Rating</span>
+              <span className="stat-number">{favoriteShops.length}</span>
+              <span className="stat-label">Favorites</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Search */}
+      {/* Search & Filters */}
       <div className="dashboard-controls">
         <div className="search-container">
           <div className="search-input-group">
             <span className="search-icon">🔍</span>
             <input
               type="text"
-              placeholder="Search shops..."
+              placeholder="Search restaurants, cuisine, or dishes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
             />
+            {searchTerm && (
+              <button
+                type="button"
+                onClick={() => setSearchTerm("")}
+                className="clear-search"
+                aria-label="Clear search"
+              >
+                ✕
+              </button>
+            )}
           </div>
+          <button type="button" className="search-btn">Search</button>
         </div>
 
-        {/* Categories */}
-        <div className="category-buttons">
-          <button
-            className={`category-btn ${
-              selectedCategory === "all" ? "active" : ""
-            }`}
-            onClick={() => setSelectedCategory("all")}
-          >
-            🏪 ALL
-          </button>
+        <div className="controls-row">
+          <div className="category-filter">
+            <h3>Cuisine Types</h3>
+            <div className="category-buttons">
+              <button
+                className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
+                onClick={() => handleCategoryButtonClick("all")}
+                style={{ '--category-color': '#6B7280', '--category-gradient': 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)' }}
+              >
+                <span className="category-icon">🏪</span>
+                <span className="category-name">ALL</span>
+              </button>
 
-          {apiCategories.map((category) => (
-            <button
-              key={category}
-              className={`category-btn ${
-                selectedCategory === category ? "active" : ""
-              }`}
-              onClick={() => setSelectedCategory(category)}
-            >
-              {categoryIcons[category?.toLowerCase()] || "🍛"}{" "}
-              {category}
-            </button>
-          ))}
+              {apiCategories.map(category => {
+                const categoryColors = getCategoryColors(category);
+                const categoryIcon = getCategoryIcon(category);
+                const formattedCategory = formatCategoryName(category);
+
+                return (
+                  <button
+                    key={category}
+                    className={`category-btn ${selectedCategory === category ? "active" : ""}`}
+                    onClick={() => handleCategoryButtonClick(category)}
+                    style={{
+                      '--category-color': categoryColors.primary,
+                      '--category-gradient': categoryColors.gradient
+                    }}
+                  >
+                    <span className="category-icon">{categoryIcon}</span>
+                    <span className="category-name">{formattedCategory}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="filter-section-spacer"></div>
+
+          <div className="filter-actions">
+            <div className="action-buttons">
+              <button
+                onClick={toggleFavoritesFilter}
+                className={`favorites-toggle-btn ${showFavoritesOnly ? "active" : ""}`}
+                aria-label={showFavoritesOnly ? "Show all restaurants" : "Show favorites only"}
+                title={showFavoritesOnly ? "Show all restaurants" : "Show my favorites"}
+                disabled={!user}
+              >
+                <span className="favorites-icon">❤️</span>
+                <span className="favorites-text">
+                  {showFavoritesOnly ? "Show All" : "My Favorites"}
+                </span>
+                {showFavoritesOnly && (
+                  <span className="favorites-count">({favoriteShops.length})</span>
+                )}
+              </button>
+              
+              <button
+                onClick={clearFilters}
+                className="clear-filters-btn"
+                disabled={selectedCategory === "all" && !searchTerm && !showFavoritesOnly}
+                aria-label="Clear all filters"
+              >
+                ✕ Clear Filters
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Results */}
-      <div className="dashboard-results">
-        {filteredShops.length > 0 ? (
+      {/* Results Section */}
+      <div className="dashboard-results" ref={shopsGridRef}>
+        <div className="results-header">
+          <h2>
+            {showFavoritesOnly ? (
+              <>
+                <span className="favorites-heart">❤️</span> My Favorite Restaurants
+                {!user && <span className="login-required"> (Login Required)</span>}
+              </>
+            ) : selectedCategory === "all" ? (
+              "All Restaurants"
+            ) : (
+              `${formatCategoryName(selectedCategory)} Restaurants`
+            )}
+            <span className="results-count"> ({filteredShops.length})</span>
+          </h2>
+          <div className="sort-options">
+            <select className="sort-select" aria-label="Sort results">
+              <option>Recommended</option>
+              <option>Rating: High to Low</option>
+              <option>Delivery: Fastest</option>
+              <option>Price: Low to High</option>
+            </select>
+          </div>
+        </div>
+
+        {loadingFavorites && showFavoritesOnly ? (
+          <div className="loading-favorites">
+            <div className="spinner"></div>
+            <p>Loading your favorite restaurants...</p>
+          </div>
+        ) : filteredShops.length > 0 ? (
           <div className="shops-grid">
-            {filteredShops.map((shop) => (
-              <ShopCard key={shop.id} shop={shop} />
+            {filteredShops.map(shop => (
+              <ShopCard 
+                key={shop.id} 
+                shop={shop} 
+                isFavorite={favoriteStatuses[shop.id] || false}
+                onToggleFavorite={() => toggleFavorite(shop.id)}
+                showFavoriteButton={true}
+              />
             ))}
           </div>
         ) : (
           <div className="no-results">
-            <h3>No shops found</h3>
-            <button onClick={clearFilters}>Reset Filters</button>
+            <div className="no-results-icon">
+              {showFavoritesOnly ? "❤️" : "🔍"}
+            </div>
+            <h3>
+              {showFavoritesOnly 
+                ? "No favorite restaurants yet" 
+                : "No restaurants found"}
+            </h3>
+            <p>
+              {showFavoritesOnly
+                ? user 
+                  ? "Click the heart icon on any restaurant to add it to your favorites!"
+                  : "Please login to save favorites"
+                : "Try adjusting your search or filters"}
+            </p>
+            <button onClick={clearFilters} className="reset-filters-btn">
+              {showFavoritesOnly ? "Browse All Restaurants" : "Reset Filters"}
+            </button>
           </div>
+        )}
+      </div>
+
+      {/* Featured Categories - Always visible */}
+      {!showFavoritesOnly && (
+        <div className="featured-categories">
+          <h2>Explore by Cuisine</h2>
+          <div className="category-grid">
+            {apiCategories.map(category => {
+              const categoryColors = getCategoryColors(category);
+              const categoryIcon = getCategoryIcon(category);
+              const formattedCategory = formatCategoryName(category);
+
+              return (
+                <div
+                  key={category}
+                  className="category-card"
+                  onClick={() => handleCategoryCardClick(category)}
+                  style={{
+                    '--category-color': categoryColors.primary,
+                    '--category-gradient': categoryColors.gradient
+                  }}
+                >
+                  <div className="category-card-icon">{categoryIcon}</div>
+                  <h4>{formattedCategory}</h4>
+                  <p className="category-count">{categoryCounts[category]} restaurants</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="dashboard-footer">
+        <p>© 2024 Foodie POS Marketplace. All rights reserved.</p>
+        <p>Fast delivery • Secure payments • 24/7 support</p>
+        {!user && (
+          <p className="login-notice">Login to save your favorite restaurants!</p>
         )}
       </div>
     </div>

@@ -1,13 +1,21 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
-  // Load cart from localStorage on initial render
+  const { user } = useAuth();
+  
+  const getStorageKey = (baseKey) => (user ? `${baseKey}_${user.id}` : `${baseKey}_guest`);
+
   const loadCartFromStorage = () => {
     try {
-      const savedCart = localStorage.getItem('pos-cart');
-      const savedQuantities = localStorage.getItem('pos-cart-quantities');
+      const cartKey = getStorageKey('pos-cart');
+      const quantitiesKey = getStorageKey('pos-cart-quantities');
+      
+      const savedCart = localStorage.getItem(cartKey);
+      const savedQuantities = localStorage.getItem(quantitiesKey);
+      
       return {
         cart: savedCart ? JSON.parse(savedCart) : [],
         quantities: savedQuantities ? JSON.parse(savedQuantities) : {}
@@ -18,47 +26,36 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const [cart, setCart] = useState(loadCartFromStorage().cart);
-  const [quantities, setQuantities] = useState(loadCartFromStorage().quantities);
+  const [cart, setCart] = useState([]);
+  const [quantities, setQuantities] = useState({});
   const [cartVisible, setCartVisible] = useState(false);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('pos-cart', JSON.stringify(cart));
-    localStorage.setItem('pos-cart-quantities', JSON.stringify(quantities));
-  }, [cart, quantities]);
+    const { cart: loadedCart, quantities: loadedQuantities } = loadCartFromStorage();
+    setCart(loadedCart);
+    setQuantities(loadedQuantities);
+  }, [user?.id]);
+
+  useEffect(() => {
+    const cartKey = getStorageKey('pos-cart');
+    const quantitiesKey = getStorageKey('pos-cart-quantities');
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+    localStorage.setItem(quantitiesKey, JSON.stringify(quantities));
+  }, [cart, quantities, user?.id]);
 
   const addToCart = (product) => {
-    const existingItem = cart.find(item => 
-      item.id === product.id && 
-      item.shopId === product.shopId
-    );
-    
+    const existingItem = cart.find(item => item.id === product.id && item.shopId === product.shopId);
     if (existingItem) {
-      setQuantities({
-        ...quantities,
-        [product.id]: (quantities[product.id] || 1) + 1
-      });
+      setQuantities({ ...quantities, [product.id]: (quantities[product.id] || 1) + 1 });
     } else {
-      setCart([...cart, { 
-        ...product, 
-        shopId: product.shopId,
-        shopName: product.shopName || `Shop ${product.shopId}`
-      }]);
-      setQuantities({
-        ...quantities,
-        [product.id]: 1
-      });
+      setCart([...cart, { ...product, shopId: product.shopId, shopName: product.shopName || `Shop ${product.shopId}` }]);
+      setQuantities({ ...quantities, [product.id]: 1 });
     }
-    
-    // Show cart when item is added
     setCartVisible(true);
   };
 
   const removeFromCart = (productId, shopId = null) => {
-    setCart(cart.filter(item => 
-      !(item.id === productId && (!shopId || item.shopId === shopId))
-    ));
+    setCart(cart.filter(item => !(item.id === productId && (!shopId || item.shopId === shopId))));
     const newQuantities = { ...quantities };
     delete newQuantities[productId];
     setQuantities(newQuantities);
@@ -69,10 +66,7 @@ export const CartProvider = ({ children }) => {
       removeFromCart(productId);
       return;
     }
-    setQuantities({
-      ...quantities,
-      [productId]: newQty
-    });
+    setQuantities({ ...quantities, [productId]: newQty });
   };
 
   const clearCart = () => {
@@ -80,68 +74,61 @@ export const CartProvider = ({ children }) => {
     setQuantities({});
   };
 
-  const getCartTotal = () => {
-    return cart.reduce((total, item) => {
-      return total + (item.price * (quantities[item.id] || 1));
-    }, 0).toFixed(2);
+  // ✅ NEW: Clear all items from a specific shop
+  const clearShopCart = (shopId) => {
+    setCart(cart.filter(item => item.shopId !== shopId));
+    const newQuantities = { ...quantities };
+    Object.keys(quantities).forEach(id => {
+      const item = cart.find(ci => ci.id.toString() === id.toString());
+      if (item && item.shopId === shopId) {
+        delete newQuantities[id];
+      }
+    });
+    setQuantities(newQuantities);
   };
 
-  const getCartCount = () => {
-    return Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
-  };
+  const getCartTotal = () => cart.reduce((total, item) => total + (item.price * (quantities[item.id] || 1)), 0).toFixed(2);
 
-  const toggleCart = () => {
-    setCartVisible(!cartVisible);
-  };
+  const getCartCount = () => Object.values(quantities).reduce((sum, qty) => sum + qty, 0);
 
-  const getShopCart = (shopId) => {
-    return cart.filter(item => item.shopId === shopId);
-  };
+  const toggleCart = () => setCartVisible(!cartVisible);
 
-  const getShopCartTotal = (shopId) => {
-    return cart
-      .filter(item => item.shopId === shopId)
-      .reduce((total, item) => {
-        return total + (item.price * (quantities[item.id] || 1));
-      }, 0)
-      .toFixed(2);
-  };
+  const getShopCart = (shopId) => cart.filter(item => item.shopId === shopId);
 
-  const getShopCartCount = (shopId) => {
-    return cart
-      .filter(item => item.shopId === shopId)
-      .reduce((sum, item) => sum + (quantities[item.id] || 1), 0);
-  };
+  const getShopCartTotal = (shopId) => cart
+    .filter(item => item.shopId === shopId)
+    .reduce((total, item) => total + (item.price * (quantities[item.id] || 1)), 0)
+    .toFixed(2);
 
-  const value = {
-    cart,
-    quantities,
-    cartVisible,
-    setCartVisible,
-    addToCart,
-    removeFromCart,
-    updateQuantity,
-    clearCart,
-    getCartTotal,
-    getCartCount,
-    toggleCart,
-    getShopCart,
-    getShopCartTotal,
-    getShopCartCount
-  };
+  const getShopCartCount = (shopId) => cart
+    .filter(item => item.shopId === shopId)
+    .reduce((sum, item) => sum + (quantities[item.id] || 1), 0);
 
   return (
-    <CartContext.Provider value={value}>
+    <CartContext.Provider value={{
+      cart,
+      quantities,
+      cartVisible,
+      setCartVisible,
+      addToCart,
+      removeFromCart,
+      updateQuantity,
+      clearCart,
+      clearShopCart, // ✅ add this
+      getCartTotal,
+      getCartCount,
+      toggleCart,
+      getShopCart,
+      getShopCartTotal,
+      getShopCartCount
+    }}>
       {children}
     </CartContext.Provider>
   );
 };
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => {
   const context = useContext(CartContext);
-  if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
+  if (!context) throw new Error('useCart must be used within a CartProvider');
   return context;
 };

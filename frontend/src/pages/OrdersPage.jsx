@@ -1,173 +1,353 @@
+// import React, { useState, useEffect } from 'react';
+// import { useNavigate } from 'react-router-dom';
+// import { useAuth } from '../context/AuthContext';
+// import './OrdersPage.css';
+
+// const OrdersPage = ({ loggedInUser }) => {
+//     const navigate = useNavigate();
+//     const { user, loading: authLoading } = useAuth();
+
+//     const [orders, setOrders] = useState([]);
+//     const [loading, setLoading] = useState(true);
+
+//     useEffect(() => {
+//         fetchOrders();
+
+//     }, []);
+
+//     const fetchOrders = async () => {
+//         setLoading(true);
+
+//         try {
+//             const token = localStorage.getItem("token");
+//             if (!token) throw new Error("No token, not logged in");
+
+//             const res = await fetch("http://127.0.0.1:8000/api/orders", {
+//                 method: "GET",
+//                 headers: {
+//                     "Accept": "application/json",
+//                     "Authorization": "Bearer " + token
+//                 }
+//             });
+
+//             if (!res.ok) {
+//                 if (res.status === 401) {
+//                     navigate("/login");
+//                 } else {
+//                     console.error("Server error:", res.status);
+//                 }
+//                 return;
+//             }
+
+//             const data = await res.json();
+//             console.log("✅ ORDERS RECEIVED:", data);
+
+//             setOrders(data);
+//         } catch (err) {
+//             console.error("Failed to fetch orders:", err);
+//             // navigate("/login"); // if token invalid → back to login
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const getStatusColor = (status) => {
+//         switch (status) {
+//             case 'completed': return '#28A745';
+//             case 'preparing': return '#f59e0b';
+//             case 'on-the-way': return '#3b82f6';
+//             case 'cancelled': return '#ef4444';
+//             default: return '#6b7280';
+//         }
+//     };
+
+//     const getStatusIcon = (status) => {
+//         switch (status) {
+//             case 'completed': return '✓';
+//             case 'preparing': return '👨‍🍳';
+//             case 'on-the-way': return '🚚';
+//             case 'cancelled': return '✕';
+//             default: return '⏳';
+//         }
+//     };
+
+//     return (
+//         <div className="orders-page">
+//             <div className="orders-container">
+//                 <div className="orders-header">
+//                     <h1>My Orders</h1>
+//                     <p>Track and manage all your orders in one place</p>
+//                 </div>
+
+//                 {loading ? (
+//                     <div className="loading-orders">
+//                         <div className="spinner"></div>
+//                         <p>Loading your orders...</p>
+//                     </div>
+//                 ) : orders.length === 0 ? (
+//                     <div className="no-orders">
+//                         <div className="no-orders-icon">📦</div>
+//                         <h3>No orders yet</h3>
+//                         <p>Start shopping to see your orders here</p>
+//                         <button onClick={() => navigate('/')} className="start-shopping-btn">
+//                             Start Shopping
+//                         </button>
+//                     </div>
+//                 ) : (
+//                     <>
+//                         <div className="orders-stats">
+//                             <div className="stat-card">
+//                                 <span className="stat-number">{orders.length}</span>
+//                                 <span className="stat-label">Total Orders</span>
+//                             </div>
+//                             <div className="stat-card">
+//                                 <span className="stat-number">
+//                                     {orders.filter(o => o.status === 'delivered').length}
+//                                 </span>
+//                                 <span className="stat-label">Delivered</span>
+//                             </div>
+//                             <div className="stat-card">
+//                                 <span className="stat-number">
+//                                     {orders.filter(o => o.status === 'preparing').length}
+//                                 </span>
+//                                 <span className="stat-label">In Progress</span>
+//                             </div>
+//                         </div>
+
+//                         <div className="orders-list">
+//                             {orders.map(order => (
+//                                 <div key={order.id} className="order-card">
+//                                     <div className="order-header">
+//                                         <div className="order-info">
+//                                             <h3>Order #{order.id}</h3>
+//                                             <p>Status: {order.status}</p>                                            
+//                                         </div>
+//                                         <div
+//                                             className="order-status"
+//                                             style={{ backgroundColor: getStatusColor(order.status) }}
+//                                         >
+//                                             <span className="status-icon">{getStatusIcon(order.status)}</span>
+//                                             <span className="status-text">
+//                                                 {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+//                                             </span>
+//                                         </div>
+//                                     </div>
+
+//                                     <div className="order-items">
+//                                         <h4>Items Ordered:</h4>
+//                                         {order.items?.map((item, index) => (
+//                                             <div key={index} className="order-item-row">
+//                                                 <span className="item-name">{item.name} × {item.quantity}</span>
+//                                                 <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+//                                             </div>
+//                                         ))}
+//                                     </div>
+
+//                                     <div className="order-footer">
+//                                         <div className="order-total">
+//                                             <span>Total:</span>
+//                                             {/* <span className="total-amount">${order.total.toFixed(2)}</span> */}
+//                                             <span className="total-amount">${Number(order.total_amount).toFixed(2)}</span>
+
+//                                         </div>
+//                                         <div className="order-actions">
+//                                             <button
+//                                                 onClick={() => navigate(`/order/${order.id}`)}
+//                                                 className="view-order-btn"
+//                                             >
+//                                                 View Details
+//                                             </button>
+//                                             {/* {order.status === 'delivered' && (
+//                                                 <button className="reorder-btn">
+//                                                     Reorder
+//                                                 </button>
+//                                             )} */}
+//                                         </div>
+//                                     </div>
+//                                 </div>
+//                             ))}
+//                         </div>
+//                     </>
+//                 )}
+//             </div>
+//         </div>
+//     );
+// };
+
+// export default OrdersPage;
+
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import './OrdersPage.css';
 
-const OrdersPage = ({ loggedInUser }) => {
+const OrdersPage = () => {
     const navigate = useNavigate();
-    const { user, loading: authLoading } = useAuth();
 
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchOrders();
-
     }, []);
 
+    // ===============================
+    // FETCH ORDERS
+    // ===============================
     const fetchOrders = async () => {
         setLoading(true);
 
         try {
             const token = localStorage.getItem("token");
-            if (!token) throw new Error("No token, not logged in");
+            if (!token) {
+                navigate("/login");
+                return;
+            }
 
             const res = await fetch("http://127.0.0.1:8000/api/orders", {
                 method: "GET",
                 headers: {
                     "Accept": "application/json",
-                    "Authorization": "Bearer " + token
-                }
+                    "Authorization": "Bearer " + token,
+                },
             });
 
             if (!res.ok) {
-                if (res.status === 401) {
-                    navigate("/login");
-                } else {
-                    console.error("Server error:", res.status);
-                }
+                if (res.status === 401) navigate("/login");
                 return;
             }
 
             const data = await res.json();
-            console.log("✅ ORDERS RECEIVED:", data);
+            console.log("✅ ORDERS:", data);
 
             setOrders(data);
-        } catch (err) {
-            console.error("Failed to fetch orders:", err);
-            // navigate("/login"); // if token invalid → back to login
+        } catch (error) {
+            console.error("Failed to fetch orders:", error);
         } finally {
             setLoading(false);
         }
     };
 
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'completed': return '#28A745';
-            case 'preparing': return '#f59e0b';
-            case 'on-the-way': return '#3b82f6';
-            case 'cancelled': return '#ef4444';
-            default: return '#6b7280';
+    // ===============================
+    // CONFIRM ORDER
+    // ===============================
+    const confirmOrder = async (orderId) => {
+        try {
+            const token = localStorage.getItem("token");
+
+            const res = await fetch(
+                `http://127.0.0.1:8000/api/orders/${orderId}/confirm`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Accept": "application/json",
+                        "Authorization": "Bearer " + token,
+                    },
+                }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                alert(data.message || "Failed to confirm order");
+                return;
+            }
+
+            alert("✅ Order completed!");
+            fetchOrders(); // refresh list
+        } catch (error) {
+            console.error("Confirm failed:", error);
         }
     };
 
-    const getStatusIcon = (status) => {
+    // ===============================
+    // STATUS UI HELPERS
+    // ===============================
+    const getStatusColor = (status) => {
         switch (status) {
-            case 'completed': return '✓';
-            case 'preparing': return '👨‍🍳';
-            case 'on-the-way': return '🚚';
-            case 'cancelled': return '✕';
-            default: return '⏳';
+            case 'completed': return '#28A745';
+            case 'pending': return '#f59e0b';
+            case 'cancelled': return '#ef4444';
+            default: return '#6b7280';
         }
     };
 
     return (
         <div className="orders-page">
             <div className="orders-container">
-                <div className="orders-header">
-                    <h1>My Orders</h1>
-                    <p>Track and manage all your orders in one place</p>
-                </div>
+                <h1>My Orders</h1>
 
                 {loading ? (
-                    <div className="loading-orders">
-                        <div className="spinner"></div>
-                        <p>Loading your orders...</p>
-                    </div>
+                    <p>Loading orders...</p>
                 ) : orders.length === 0 ? (
-                    <div className="no-orders">
-                        <div className="no-orders-icon">📦</div>
-                        <h3>No orders yet</h3>
-                        <p>Start shopping to see your orders here</p>
-                        <button onClick={() => navigate('/')} className="start-shopping-btn">
-                            Start Shopping
-                        </button>
-                    </div>
+                    <p>No orders yet</p>
                 ) : (
-                    <>
-                        <div className="orders-stats">
-                            <div className="stat-card">
-                                <span className="stat-number">{orders.length}</span>
-                                <span className="stat-label">Total Orders</span>
-                            </div>
-                            <div className="stat-card">
-                                <span className="stat-number">
-                                    {orders.filter(o => o.status === 'delivered').length}
-                                </span>
-                                <span className="stat-label">Delivered</span>
-                            </div>
-                            <div className="stat-card">
-                                <span className="stat-number">
-                                    {orders.filter(o => o.status === 'preparing').length}
-                                </span>
-                                <span className="stat-label">In Progress</span>
-                            </div>
-                        </div>
+                    <div className="orders-list">
+                        {orders.map(order => (
+                            <div key={order.id} className="order-card">
 
-                        <div className="orders-list">
-                            {orders.map(order => (
-                                <div key={order.id} className="order-card">
-                                    <div className="order-header">
-                                        <div className="order-info">
-                                            <h3>Order #{order.id}</h3>
-                                            <p>Status: {order.status}</p>                                            
-                                        </div>
-                                        <div
-                                            className="order-status"
-                                            style={{ backgroundColor: getStatusColor(order.status) }}
-                                        >
-                                            <span className="status-icon">{getStatusIcon(order.status)}</span>
-                                            <span className="status-text">
-                                                {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                {/* HEADER */}
+                                <div className="order-header">
+                                    <h3>Order #{order.id}</h3>
+                                    <span
+                                        className="order-status"
+                                        style={{ backgroundColor: getStatusColor(order.status) }}
+                                    >
+                                        {order.status.toUpperCase()}
+                                    </span>
+                                </div>
+
+                                {/* ITEMS */}
+                                {/* <div className="order-items">
+                                    <h4>Items</h4>
+
+                                    {order.items?.map((item, index) => (
+                                        <div key={index} className="order-item-row">
+                                            <span>
+                                                {item.product?.name} × {item.quantity}
+                                            </span>
+                                            <span>
+                                                ${(item.price * item.quantity).toFixed(2)}
                                             </span>
                                         </div>
-                                    </div>
-
-                                    <div className="order-items">
+                                    ))}
+                                </div> */}
+                                
+                                <div className="order-items">
                                         <h4>Items Ordered:</h4>
                                         {order.items?.map((item, index) => (
                                             <div key={index} className="order-item-row">
                                                 <span className="item-name">{item.name} × {item.quantity}</span>
-                                                <span className="item-price">${(item.price * item.quantity).toFixed(2)}</span>
+                                                <span className="item-price">MMK {(item.price * item.quantity).toFixed(2)}</span>
                                             </div>
                                         ))}
-                                    </div>
+                                </div>
+                                
 
-                                    <div className="order-footer">
-                                        <div className="order-total">
-                                            <span>Total:</span>
-                                            {/* <span className="total-amount">${order.total.toFixed(2)}</span> */}
-                                            <span className="total-amount">${Number(order.total_amount).toFixed(2)}</span>
+                                {/* FOOTER */}
+                                <div className="order-footer">
+                                    <strong>
+                                        Total: MMK {Number(order.total_amount).toFixed(2)}
+                                    </strong>
 
-                                        </div>
-                                        <div className="order-actions">
+                                    <div className="order-actions">
+                                        
+
+                                        {/* ✅ CONFIRM BUTTON */}
+                                        {order.status === 'pending' && (
                                             <button
-                                                onClick={() => navigate(`/order/${order.id}`)}
-                                                className="view-order-btn"
+                                                onClick={() => confirmOrder(order.id)}
+                                                className="confirm-order-btn"
                                             >
-                                                View Details
+                                                Confirm Received
                                             </button>
-                                            {/* {order.status === 'delivered' && (
-                                                <button className="reorder-btn">
-                                                    Reorder
-                                                </button>
-                                            )} */}
-                                        </div>
+                                        )}
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    </>
+
+                            </div>
+                        ))}
+                    </div>
                 )}
             </div>
         </div>

@@ -33,7 +33,12 @@ const RegisterPage = () => {
     const validate = () => {
         const newErrors = {};
         if (!formData.name) newErrors.name = 'Full Name is required';
-        if (!formData.email) newErrors.email = 'Email is required';
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+        // eslint-disable-next-line no-undef
+        } else if (!isValidEmail(formData.email)) {
+            newErrors.email = 'Please enter a valid email address';
+        }
         if (!formData.password) newErrors.password = 'Password is required';
         if (formData.password !== formData.confirmPassword)
             newErrors.confirmPassword = 'Passwords do not match';
@@ -149,21 +154,18 @@ const RegisterPage = () => {
                         </div>
 
                         <div className="form-row role-row">
-                            <div className="form-group">
-                                <label htmlFor="role" className="form-label">Account Type</label>
-                                <select
-                                    id="role"
-                                    name="role"
-                                    value={formData.role}
-                                    onChange={handleInputChange}
-                                    className="form-input select-input"
-                                    disabled={isLoading}
-                                >
-                                    <option value="customer">Customer Account</option>
-                                    <option value="vendor">Vendor Account</option>
-                                </select>
-                            </div>
+                        <div className="form-group">
+                            <label className="form-label">Account Type</label>
+                            <input
+                            type="text"
+                            value="Customer Account"
+                            className="form-input"
+                            disabled
+                            />
+                            <input type="hidden" name="role" value="customer" />
                         </div>
+                        </div>
+
 
                         <div className="form-row password-row">
                             <div className="form-group">

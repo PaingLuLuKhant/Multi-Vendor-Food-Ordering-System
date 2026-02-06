@@ -836,3 +836,69 @@ body.dark-mode .no-user p {
     width: 12px;
   }
 }
+/* Avatar with letter */
+.avatar-letter {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48px;
+  font-weight: bold;
+  color: white;
+  text-transform: uppercase;
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+}
+
+/* Keep the overlay for changing photo */
+.user-avatar-large {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+}
+
+.user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-overlay {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: rgba(0, 0, 0, 0.7);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  border: 2px solid white;
+}
+
+.avatar-overlay:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.avatar-overlay span {
+  color: white;
+  font-size: 16px;
+}
+
+/* Dark mode support */
+.dark-mode .avatar-letter {
+  box-shadow: 0 10px 20px rgba(102, 126, 234, 0.5);
+}
+
+.dark-mode .avatar-overlay {
+  border-color: #333;
+}

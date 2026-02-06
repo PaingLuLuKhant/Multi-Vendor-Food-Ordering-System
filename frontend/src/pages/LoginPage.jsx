@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './LoginPage.css';
+import { isValidEmail } from '../../utils/validators';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({
@@ -15,7 +16,7 @@ const LoginPage = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const { login } = useAuth();
+    const { login } = useAuth(); 
 
     const from = location.state?.from?.pathname || '/';
 
@@ -24,7 +25,7 @@ const LoginPage = () => {
 
         if (!formData.email.trim()) {
             newErrors.email = 'Email is required';
-        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        } else if (!isValidEmail(formData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
 
@@ -133,20 +134,7 @@ const LoginPage = () => {
                         </div>
                     </div>
 
-                    <div className="login-stats">
-                        <div className="stat">
-                            <span className="stat-number">500+</span>
-                            <span className="stat-label">Active Shops</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-number">10K+</span>
-                            <span className="stat-label">Happy Customers</span>
-                        </div>
-                        <div className="stat">
-                            <span className="stat-number">24/7</span>
-                            <span className="stat-label">Support</span>
-                        </div>
-                    </div>
+                    
                 </div>
 
                 {/* Right Side */}
