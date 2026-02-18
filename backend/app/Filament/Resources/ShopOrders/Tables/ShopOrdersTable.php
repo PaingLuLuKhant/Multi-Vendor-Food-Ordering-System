@@ -4,115 +4,78 @@ namespace App\Filament\Resources\ShopOrders\Tables;
 
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Actions\ViewAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Shop;
+use App\Models\OrderItem;
 
 class ShopOrdersTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->query(
+                fn() => OrderItem::with(['order.user', 'product.shop'])
+                ->where('delivery_status', 'completed')
+                    ->whereHas('product', function ($q) {
+                        $shopIds = Shop::where('user_id', Auth::id())->pluck('id');
+                        $q->whereIn('shop_id', $shopIds);
+                    })
+            )
             ->columns([
                 TextColumn::make('row_number')
                     ->rowIndex()
                     ->label('#'),
-                // Customer name
-                TextColumn::make('user.name')
+
+                TextColumn::make('order.user.name')
                     ->label('Customer')
                     ->sortable()
                     ->searchable(),
 
-                // ✅ Product names ONLY from this shop
-                TextColumn::make('shop_products')
-                    ->label('Product Name')
-                    ->getStateUsing(function ($record) {
-                        $userId = Auth::id();
-
-                        $shopIds = Shop::where('user_id', $userId)->pluck('id');
-
-                        return $record->orderItems
-                            ->filter(
-                                fn($item) =>
-                                $item->product &&
-                                $shopIds->contains($item->product->shop_id)
-                            )
-                            ->map(
-                                fn($item) =>
-                                $item->product->name . ' x ' . $item->quantity
-                            )
-                            ->join(', ');
-                    })
+                TextColumn::make('product.name')
+                    ->label('Product')
+                    ->formatStateUsing(
+                        fn($state, $record) => $state . ' x ' . $record->quantity
+                    )
                     ->wrap(),
 
-                // ✅ Total ONLY from this shop
-                TextColumn::make('shop_total_amount')
-                    ->label('Total amount')
+                TextColumn::make('price')
+                    ->label('Unit Price')
+                    ->money('MMK'),
+
+                TextColumn::make('quantity')
+                    ->label('Quantity'),
+
+                TextColumn::make('total')
+                    ->label('Total')
+                    ->getStateUsing(fn($record) => $record->price * $record->quantity)
                     ->money('MMK')
-                    ->getStateUsing(function ($record) {
-                        $userId = Auth::id();
+                    ->sortable(),
 
-                        $shopIds = Shop::where('user_id', $userId)->pluck('id');
-
-                        return $record->orderItems
-                            ->filter(
-                                fn($item) =>
-                                $item->product &&
-                                $shopIds->contains($item->product->shop_id)
-                            )
-                            ->sum(
-                                fn($item) =>
-                                $item->price * $item->quantity
-                            );
+                TextColumn::make('delivery_status')
+                    ->label('Status')
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        'completed' => 'success',
+                        'pending' => 'warning',
+                        'assigned' => 'primary',
+                        default => 'gray',
                     })
                     ->sortable(),
 
-                TextColumn::make('id')
+                TextColumn::make('order.id')
                     ->label('Order ID')
-                    ->sortable()
-                    ->searchable(),
-
-                // Status
-                TextColumn::make('status')
-                    ->badge()
-                    ->colors([
-                        'warning' => 'pending',
-                        'info' => 'processing',
-                        'success' => 'completed',
-                        'danger' => 'cancelled',
-                    ])
                     ->sortable(),
 
-                // TextColumn::make('created_at')
-                // ->label('Ordered at')
-                //     ->dateTime()
-                //     ->sortable(),
-                TextColumn::make('created_at')
+                TextColumn::make('order.created_at')
                     ->label('Ordered at')
-                    ->formatStateUsing(
-                        fn($state) =>
-                        \Carbon\Carbon::parse($state)->diffForHumans([
-                            'short' => true,
-                        ])
+                    ->formatStateUsing(fn($state) =>
+                        \Carbon\Carbon::parse($state)->diffForHumans(['short' => true])
                     )
                     ->sortable(),
             ])
-            ->filters([
-                SelectFilter::make('status')->options([
-                    'pending' => 'Pending',
-                    'processing' => 'Processing',
-                    'completed' => 'Completed',
-                    'cancelled' => 'Cancelled',
-                ]),
-            ])
             ->recordActions([
                 ViewAction::make(),
-                // EditAction::make(),
             ]);
-
     }
 }

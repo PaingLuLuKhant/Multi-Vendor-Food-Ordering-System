@@ -27,7 +27,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Order routes
     Route::get('/orders', [OrderController::class, 'orders']);   // view orders
     Route::post('/orders', [OrderController::class, 'store']);
-    Route::post('/orders/{order}/confirm', [OrderController::class, 'confirm']);
 
     // Favorite routes
     Route::get('/user/favorites', [FavoritesController::class, 'index']);

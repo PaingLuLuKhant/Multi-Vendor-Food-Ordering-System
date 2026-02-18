@@ -5,17 +5,17 @@ const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const { user } = useAuth();
-  
+
   const getStorageKey = (baseKey) => (user ? `${baseKey}_${user.id}` : `${baseKey}_guest`);
 
   const loadCartFromStorage = () => {
     try {
       const cartKey = getStorageKey('pos-cart');
       const quantitiesKey = getStorageKey('pos-cart-quantities');
-      
+
       const savedCart = localStorage.getItem(cartKey);
       const savedQuantities = localStorage.getItem(quantitiesKey);
-      
+
       return {
         cart: savedCart ? JSON.parse(savedCart) : [],
         quantities: savedQuantities ? JSON.parse(savedQuantities) : {}
@@ -31,10 +31,39 @@ export const CartProvider = ({ children }) => {
   const [cartVisible, setCartVisible] = useState(false);
 
   useEffect(() => {
-    const { cart: loadedCart, quantities: loadedQuantities } = loadCartFromStorage();
+    const migrateGuestCartToUser = () => {
+      // if user just logged in
+      if (!user) return;
+
+      const guestCart = localStorage.getItem('pos-cart_guest');
+      const guestQuantities = localStorage.getItem('pos-cart-quantities_guest');
+
+      const userCartKey = `pos-cart_${user.id}`;
+      const userQtyKey = `pos-cart-quantities_${user.id}`;
+
+      const existingUserCart = localStorage.getItem(userCartKey);
+
+      // only migrate if user cart is empty
+      if (guestCart && !existingUserCart) {
+        localStorage.setItem(userCartKey, guestCart);
+        localStorage.setItem(userQtyKey, guestQuantities || '{}');
+
+        // optional: remove guest cart after migration
+        localStorage.removeItem('pos-cart_guest');
+        localStorage.removeItem('pos-cart-quantities_guest');
+      }
+    };
+
+    migrateGuestCartToUser();
+
+    const { cart: loadedCart, quantities: loadedQuantities } =
+      loadCartFromStorage();
+
     setCart(loadedCart);
     setQuantities(loadedQuantities);
+
   }, [user?.id]);
+
 
   useEffect(() => {
     const cartKey = getStorageKey('pos-cart');

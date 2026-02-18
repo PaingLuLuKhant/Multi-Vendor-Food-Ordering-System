@@ -98,38 +98,4 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
-    public function confirm(Order $order)
-    {
-        $user = Auth::user();
-
-        // 🔒 Must be logged in
-        if (! $user) {
-            return response()->json(['message' => 'Unauthenticated'], 401);
-        }
-
-        // 🔒 Only owner of order can confirm
-        if ($order->user_id !== $user->id) {
-            return response()->json(['message' => 'Not allowed'], 403);
-        }
-
-        // 🔒 Only pending orders can be confirmed
-        if ($order->status !== 'pending') {
-            return response()->json([
-                'message' => 'Order cannot be confirmed'
-            ], 400);
-        }
-
-        // ✅ Update status
-        $order->update([
-            'status' => 'completed',
-            'paid_time' => now(),
-        ]);
-
-        return response()->json([
-            'message' => 'Order completed successfully',
-            'order' => $order,
-        ]);
-    }
-    
 }

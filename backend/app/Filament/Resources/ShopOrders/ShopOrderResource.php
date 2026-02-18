@@ -30,7 +30,7 @@ class ShopOrderResource extends Resource
 
     public static function getNavigationLabel(): string
     {
-        return 'Orders';
+        return 'Completed Orders';
     }
 
     public static function shouldRegisterNavigation(): bool
@@ -51,7 +51,8 @@ class ShopOrderResource extends Resource
             ->with([
                 'user',
                 'orderItems.product.shop.owner', // eager load everything needed
-            ]);
+            ])
+            ->where('status', 'completed');
 
         if (! $user) {
             return $query;

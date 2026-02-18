@@ -75,6 +75,6 @@ class ShopResource extends Resource
 
 
 
-    
+
 
 }

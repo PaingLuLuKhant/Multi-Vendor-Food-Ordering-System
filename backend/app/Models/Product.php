@@ -17,7 +17,10 @@ class Product extends Model
         'shop_id',
         'created_at',
     ];
-    public function shop() { return $this->belongsTo(Shop::class); }
+    public function shop()
+    {
+        return $this->belongsTo(Shop::class);
+    }
 
     // new addition 20.1.26
         public function orderItems()
