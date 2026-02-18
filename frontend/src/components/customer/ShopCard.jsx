@@ -1,28 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { getCategoryColors, getCategoryIcon, formatCategoryName } from "/utils/categoryColors";
 import "./ShopCard.css";
 
 const ShopCard = ({ shop, isFavorite, onToggleFavorite, showFavoriteButton = true }) => {
-  const [isOpen, setIsOpen] = useState(true);
+  const isOpen = !!shop.is_open_now;
   
   // Get consistent colors and icon based on category
   const categoryColors = getCategoryColors(shop.category);
   const categoryIcon = getCategoryIcon(shop.category);
   const formattedCategory = formatCategoryName(shop.category);
-
-  // Check opening hours
-  useEffect(() => {
-    const checkOpenStatus = () => {
-      const now = new Date();
-      const currentHour = now.getHours();
-      setIsOpen(currentHour >= 8 && currentHour < 22);
-    };
-    
-    checkOpenStatus();
-    const interval = setInterval(checkOpenStatus, 60000);
-    return () => clearInterval(interval);
-  }, []);
 
   // Get description with fallback - ENSURE IT'S NEVER EMPTY
   const getDescription = () => {

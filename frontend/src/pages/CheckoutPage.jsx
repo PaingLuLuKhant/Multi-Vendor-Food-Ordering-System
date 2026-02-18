@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext'; // Import useAuth
+import { useAuth } from '../context/AuthContext';
 import './CheckoutPage.css';
 
 const CheckoutPage = () => {
   const navigate = useNavigate();
   const { cart, quantities, getCartTotal, clearCart } = useCart();
-  const { user, token } = useAuth(); // Get user and token from auth context
+  const { user, token } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -17,6 +17,7 @@ const CheckoutPage = () => {
     paymentMethod: 'cash'
   });
 
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
   // Auto-fill user data when component mounts or user changes
@@ -26,7 +27,6 @@ const CheckoutPage = () => {
         ...prev,
         name: user.name || '',
         email: user.email || '',
-        // If user has phone/address in their profile, you can add them here too
         phone: user.phone || '',
         address: user.address || ''
       }));
@@ -35,18 +35,23 @@ const CheckoutPage = () => {
 
   const deliveryFee = 2.99;
   const subtotal = parseFloat(getCartTotal());
-  const total = subtotal + deliveryFee ;
+  const total = subtotal + deliveryFee;
 
   // Handle input changes
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     
-    // Format phone number as user types
+    // Clear error for this field
+    if (errors[name]) {
+      setErrors(prev => ({ ...prev, [name]: '' }));
+    }
+    
     if (name === 'phone') {
-      const formattedPhone = formatMyanmarPhone(value);
+      // Just allow digits, no auto-formatting
+      const phoneNumber = value.replace(/\D/g, '');
       setFormData(prev => ({
         ...prev,
-        [name]: formattedPhone
+        [name]: phoneNumber
       }));
     } else {
       setFormData(prev => ({
@@ -56,50 +61,69 @@ const CheckoutPage = () => {
     }
   };
 
-  // Format Myanmar phone number (09X XXX XXXX)
-  const formatMyanmarPhone = (value) => {
-    // Remove all non-digit characters
-    const phoneNumber = value.replace(/\D/g, '');
-    
-    // Limit to 11 characters (09XXXXXXXXX)
-    const limited = phoneNumber.slice(0, 11);
-    
-    // Format with spaces: 09X XXX XXXX
-    if (limited.length > 3 && limited.length <= 6) {
-      return limited.replace(/(\d{3})(\d{0,3})/, '$1 $2');
-    } else if (limited.length > 6) {
-      return limited.replace(/(\d{3})(\d{3})(\d{0,4})/, '$1 $2 $3');
-    }
-    
-    return limited;
-  };
-
   // Validate Myanmar phone number
   const validateMyanmarPhone = (phone) => {
-    // Remove spaces for validation
-    const cleanPhone = phone.replace(/\s/g, '');
-    // Myanmar phone numbers start with 09 and are 11 digits total
-    return /^09\d{9}$/.test(cleanPhone);
+    const cleanPhone = phone.replace(/\D/g, '');
+    
+    if (!cleanPhone.trim()) {
+      return 'Phone number is required';
+    }
+    
+    if (!cleanPhone.startsWith('09')) {
+      return 'Phone number must start with 09';
+    }
+    
+    const length = cleanPhone.length;
+    if (length < 9) {
+      return `Phone number too short (${length} digits). Need 9-11 digits`;
+    }
+    
+    if (length > 11) {
+      return `Phone number too long (${length} digits). Maximum 11 digits`;
+    }
+    
+    if (!/^09\d+$/.test(cleanPhone)) {
+      return 'Invalid phone number format';
+    }
+    
+    return '';
+  };
+
+  // Format phone for display
+  const formatPhoneForDisplay = (phone) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length === 0) return '';
+    
+    if (cleanPhone.length === 11) {
+      return cleanPhone.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+    } else if (cleanPhone.length === 10) {
+      return cleanPhone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    } else if (cleanPhone.length === 9) {
+      return cleanPhone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    }
+    
+    return cleanPhone;
   };
 
   // Validate form
   const validateForm = () => {
+    const newErrors = {};
+    
     if (!formData.name.trim()) {
-      alert('Please enter your name');
-      return false;
+      newErrors.name = 'Please enter your name';
     }
     
-    if (!validateMyanmarPhone(formData.phone)) {
-      alert('Please enter a valid Myanmar phone number (09XXXXXXXXX)');
-      return false;
+    const phoneError = validateMyanmarPhone(formData.phone);
+    if (phoneError) {
+      newErrors.phone = phoneError;
     }
     
     if (!formData.address.trim()) {
-      alert('Please enter your delivery address');
-      return false;
+      newErrors.address = 'Please enter your delivery address';
     }
     
-    return true;
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Handle order submission
@@ -121,6 +145,10 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
+      // Clean phone number (digits only)
+      const cleanPhone = formData.phone.replace(/\D/g, '');
+
+      // Prepare API payload
       const orderItems = cart.map(item => ({
         product_id: item.id,
         quantity: quantities[item.id] || 1,
@@ -132,19 +160,19 @@ const CheckoutPage = () => {
         items: orderItems,
         customer_name: formData.name,
         customer_email: formData.email,
-        customer_phone: formData.phone.replace(/\s/g, ''), // Remove spaces for storage
+        customer_phone: cleanPhone,
         customer_address: formData.address,
         payment_method: formData.paymentMethod,
-        user_id: user.id // Include user ID from auth context
+        user_id: user.id
       };
 
-      // Use token from auth context instead of localStorage
+      // Send order to backend API
       const response = await fetch('http://127.0.0.1:8000/api/orders', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
-          'Authorization': `Bearer ${token}` // Use token from context
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(data)
       });
@@ -155,17 +183,44 @@ const CheckoutPage = () => {
         throw new Error(result.message || 'Order submission failed');
       }
 
-      console.log('Order response:', result);
+      // Prepare confirmation data from both cart and form data
+      const confirmationData = {
+        // From the form
+        name: formData.name,
+        email: formData.email,
+        address: formData.address,
+        phone: cleanPhone,
+        paymentMethod: formData.paymentMethod,
+        
+        // From cart
+        items: cart.map(item => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          shopName: item.shopName || 'Unknown Shop'
+        })),
+        quantities: { ...quantities },
+        
+        // Calculated totals
+        subtotal: subtotal.toFixed(2),
+        deliveryFee: deliveryFee.toFixed(2),
+        serviceFee: '1.49',
+        total: total.toFixed(2),
+        
+        // From API response
+        orderId: result.id || result.order_id,
+        orderNumber: result.order_number,
+        createdAt: result.created_at,
+        status: result.status
+      };
 
       // Clear cart
       clearCart();
 
-      // Navigate to confirmation page
+      // Navigate to confirmation page with complete data
       navigate('/order-confirmation', {
         state: { 
-          orderDetails: result,
-          customerName: formData.name,
-          customerPhone: formData.phone
+          orderDetails: confirmationData
         }
       });
 
@@ -178,7 +233,7 @@ const CheckoutPage = () => {
   };
 
   const handleCancel = () => {
-    navigate('/cart'); // Go back to cart
+    navigate('/cart');
   };
 
   // If user is not logged in, show message
@@ -207,13 +262,12 @@ const CheckoutPage = () => {
     );
   }
 
+  const displayPhone = formatPhoneForDisplay(formData.phone);
+
   return (
     <div className="checkout-page">
       <div className="checkout-container">
         <h1>Checkout</h1>
-        {/* <div className="user-info-banner">
-          <span>Logged in as: <strong>{user.name}</strong> ({user.email})</span>
-        </div> */}
         <div className="checkout-content">
 
           {/* Delivery Form */}
@@ -230,7 +284,9 @@ const CheckoutPage = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="John Doe"
+                className={errors.name ? 'error' : ''}
               />
+              {errors.name && <div className="error-message">{errors.name}</div>}
               <small className="field-note">Auto-filled from your account</small>
             </div>
 
@@ -245,13 +301,16 @@ const CheckoutPage = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                  placeholder="9XX XXX XXXX"
-                  maxLength="13" // 11 digits + 2 spaces
-                  pattern="^09\d{9}$"
-                  title="Myanmar phone number (09XXXXXXXXX)"
+                  placeholder="09XXXXXXXXX"
+                  className={errors.phone ? 'error' : ''}
                 />
               </div>
-              <small className="phone-hint">Format: 09X XXX XXXX (Myanmar)</small>
+              
+              {errors.phone ? (
+                <div className="error-message">{errors.phone}</div>
+              ) : (
+                <small className="phone-hint">Format: 09XXXXXXXXX (9-11 digits)</small>
+              )}
             </div>
 
             <div className="form-group">
@@ -275,9 +334,11 @@ const CheckoutPage = () => {
                 value={formData.address}
                 onChange={handleInputChange}
                 required
-                placeholder=" House/Street number, Street name, Township, City"
+                placeholder="House/Street number, Street name, Township, City"
                 rows="3"
+                className={errors.address ? 'error' : ''}
               />
+              {errors.address && <div className="error-message">{errors.address}</div>}
             </div>
 
             <h2>Payment Method</h2>
@@ -292,28 +353,6 @@ const CheckoutPage = () => {
                 />
                 <span>💵 Cash on Delivery</span>
               </label>
-              
-              {/* <label className="payment-option">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="kbz"
-                  checked={formData.paymentMethod === 'kbz'}
-                  onChange={handleInputChange}
-                />
-                <span>🏦 KBZ Pay</span>
-              </label>
-              
-              <label className="payment-option">
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="wave"
-                  checked={formData.paymentMethod === 'wave'}
-                  onChange={handleInputChange}
-                />
-                <span>🌊 Wave Money</span>
-              </label> */}
             </div>
 
             <div className="form-actions">
@@ -360,14 +399,12 @@ const CheckoutPage = () => {
             <div className="customer-info-summary">
               <h3>👤 Customer Information</h3>
               <p><strong>Name:</strong> {formData.name || 'Not provided'}</p>
-              <p><strong>Phone:</strong> {formData.phone || 'Not provided'}</p>
+              <p><strong>Phone:</strong> {displayPhone || 'Not provided'}</p>
               <p><strong>Email:</strong> {formData.email || 'Not provided'}</p>
             </div>
 
-            
-            
             <div className="phone-note">
-              <p>📞 We'll call you at {formData.phone || 'your number'} for delivery confirmation</p>
+              <p>📞 We'll call you at {displayPhone || 'your number'} for delivery confirmation</p>
             </div>
           </div>
 

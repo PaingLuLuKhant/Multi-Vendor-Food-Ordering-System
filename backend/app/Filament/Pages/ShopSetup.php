@@ -21,6 +21,7 @@ class ShopSetup extends Page implements Forms\Contracts\HasForms
     public $category;
 
     protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-building-storefront';
+    protected static ?string $navigationLabel = 'Setup Your Shop Here';
     protected string $view = 'filament.pages.shop-setup';
 
     public function mount(): void

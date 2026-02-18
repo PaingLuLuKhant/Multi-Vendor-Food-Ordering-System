@@ -183,7 +183,6 @@ import './OrdersPage.css';
 
 const OrdersPage = () => {
     const navigate = useNavigate();
-
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -205,7 +204,6 @@ const OrdersPage = () => {
             }
 
             const res = await fetch("http://127.0.0.1:8000/api/orders", {
-                method: "GET",
                 headers: {
                     "Accept": "application/json",
                     "Authorization": "Bearer " + token,
@@ -218,7 +216,7 @@ const OrdersPage = () => {
             }
 
             const data = await res.json();
-            console.log("✅ ORDERS:", data);
+            console.log("✅ ORDERS FROM DB:", data);
 
             setOrders(data);
         } catch (error) {
@@ -229,39 +227,7 @@ const OrdersPage = () => {
     };
 
     // ===============================
-    // CONFIRM ORDER
-    // ===============================
-    const confirmOrder = async (orderId) => {
-        try {
-            const token = localStorage.getItem("token");
-
-            const res = await fetch(
-                `http://127.0.0.1:8000/api/orders/${orderId}/confirm`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Accept": "application/json",
-                        "Authorization": "Bearer " + token,
-                    },
-                }
-            );
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.message || "Failed to confirm order");
-                return;
-            }
-
-            alert("✅ Order completed!");
-            fetchOrders(); // refresh list
-        } catch (error) {
-            console.error("Confirm failed:", error);
-        }
-    };
-
-    // ===============================
-    // STATUS UI HELPERS
+    // STATUS COLOR
     // ===============================
     const getStatusColor = (status) => {
         switch (status) {
@@ -298,51 +264,25 @@ const OrdersPage = () => {
                                 </div>
 
                                 {/* ITEMS */}
-                                {/* <div className="order-items">
-                                    <h4>Items</h4>
-
+                                <div className="order-items">
+                                    <h4>Items Ordered:</h4>
                                     {order.items?.map((item, index) => (
                                         <div key={index} className="order-item-row">
-                                            <span>
-                                                {item.product?.name} × {item.quantity}
+                                            <span className="item-name">
+                                                {item.name} × {item.quantity}
                                             </span>
-                                            <span>
-                                                ${(item.price * item.quantity).toFixed(2)}
+                                            <span className="item-price">
+                                                MMK {(item.price * item.quantity).toFixed(2)}
                                             </span>
                                         </div>
                                     ))}
-                                </div> */}
-                                
-                                <div className="order-items">
-                                        <h4>Items Ordered:</h4>
-                                        {order.items?.map((item, index) => (
-                                            <div key={index} className="order-item-row">
-                                                <span className="item-name">{item.name} × {item.quantity}</span>
-                                                <span className="item-price">MMK {(item.price * item.quantity).toFixed(2)}</span>
-                                            </div>
-                                        ))}
                                 </div>
-                                
 
                                 {/* FOOTER */}
                                 <div className="order-footer">
                                     <strong>
                                         Total: MMK {Number(order.total_amount).toFixed(2)}
                                     </strong>
-
-                                    <div className="order-actions">
-                                        
-
-                                        {/* ✅ CONFIRM BUTTON */}
-                                        {order.status === 'pending' && (
-                                            <button
-                                                onClick={() => confirmOrder(order.id)}
-                                                className="confirm-order-btn"
-                                            >
-                                                Confirm Received
-                                            </button>
-                                        )}
-                                    </div>
                                 </div>
 
                             </div>
