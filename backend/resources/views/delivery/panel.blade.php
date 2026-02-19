@@ -13,11 +13,7 @@
         }
 
         .header {
-<<<<<<< HEAD
-            background: #385697;
-=======
             background: #6b1511;
->>>>>>> ksh
             color: white;
             padding: 16px 24px;
             font-size: 20px;
