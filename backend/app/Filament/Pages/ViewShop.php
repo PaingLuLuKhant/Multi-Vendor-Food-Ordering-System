@@ -10,15 +10,9 @@ use UnitEnum;
 class ViewShop extends Page
 {
     protected static string|UnitEnum|null $navigationGroup = 'Shop';
-<<<<<<< HEAD
-    protected static ?string $navigationLabel = 'View Shop';
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
-    protected static ?int $navigationSort = 1;
-=======
     protected static ?string $navigationLabel = 'View Your Shop';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
     protected static ?int $navigationSort = 3;
->>>>>>> pllkdev
 
     protected string $view = 'filament.pages.view-shop';
 
