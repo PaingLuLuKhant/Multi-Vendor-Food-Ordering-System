@@ -182,13 +182,18 @@ const RegisterPage = () => {
                                         disabled={isLoading}
                                     />
                                     <button
-                                        type="button"
-                                        className="password-toggle"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        disabled={isLoading}
+                                    type="button"
+                                    className="password-toggle"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                    disabled={isLoading}
                                     >
-                                        {showPassword ? '👁️' : '👁️‍🗨️'}
+                                    <img
+                                        src={showPassword ? "/icons/eye_open.png" : "/icons/eye_closed.png"}
+                                        alt="toggle password"
+                                        className="eye-icon"
+                                    />
                                     </button>
+
                                 </div>
                                 {errors.password && <span className="error-message">{errors.password}</span>}
                             </div>

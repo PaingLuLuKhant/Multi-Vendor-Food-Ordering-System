@@ -144,7 +144,7 @@
 
 .shop-category-tag {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 4px 8px;
   background: var(--category-light, #f8f9ff);
   color: var(--category-color, #667eea);
   border: 1px solid color-mix(in srgb, var(--category-color, #667eea) 20%, transparent);
@@ -163,7 +163,7 @@
 }
 
 .rating-stars {
-  color: #F59E0B;
+  color: #FFFFFF;
   font-size: 14px;
   letter-spacing: 1px;
   margin-bottom: 4px;
@@ -560,8 +560,8 @@
 }
 
 .rating-stars {
-  color: #F59E0B;
-  font-size: 14px;
+  color: #FFFFFF;
+  font-size: 15px;
   letter-spacing: 1px;
   display: flex;
   align-items: center;
@@ -569,7 +569,7 @@
 
 /* Half star styling */
 .half-star {
-  color: #e0e0e0;
+  color: #e0e0e061;
   position: relative;
   display: inline-block;
 }
@@ -581,7 +581,7 @@
   top: 0;
   width: 50%;
   overflow: hidden;
-  color: #F59E0B;
+  color: #FFFFFF;
 }
 
 .rating-value {

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Carbon\Carbon; // ADD THIS
 
 use App\Models\ShopRating;
 
@@ -19,6 +20,9 @@ class Shop extends Model
         'description',
         'category',
         'status',
+        'open_time',
+        'close_time',
+        'is_closed_today',
     ];
     public function products()
     {
@@ -58,7 +62,7 @@ class Shop extends Model
     public function favoritedBy(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_favorites', 'shop_id', 'user_id')
-                    ->withTimestamps();
+            ->withTimestamps();
     }
 
     /**
@@ -68,5 +72,18 @@ class Shop extends Model
     {
         return $this->favorites()->where('user_id', $userId)->exists();
     }
+    public function isOpen(): bool
+    {
+        if ($this->is_closed_today) {
+            return false;
+        }
 
+        if (!$this->open_time || !$this->close_time) {
+            return false;
+        }
+
+        $now = Carbon::now('Asia/Yangon')->format('H:i');
+
+        return $now >= $this->open_time && $now <= $this->close_time;
+    }
 }

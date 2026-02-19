@@ -22,7 +22,7 @@ const ShopPage = () => {
   const [editingRatingId, setEditingRatingId] = useState(null);
   const [deletingRatingId, setDeletingRatingId] = useState(null);
 
-  const { 
+  const {
     addToCart: globalAddToCart,
     updateQuantity: globalUpdateQuantity,
     removeFromCart: globalRemoveFromCart,
@@ -51,13 +51,19 @@ const ShopPage = () => {
     return getCategoryIcon(shop.category);
   };
 
+  // Format time like 930 -> 09:30
+  const formatTime = (time) => {
+    if (!time) return "";
+    return time; // API already sends "HH:MM" correctly
+  };
+
+  const isOpen = shop?.is_open_now;
+
   useEffect(() => {
     const fetchShop = async () => {
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/shops/${id}`, {
-          headers: {
-            Accept: "application/json",
-          },
+          headers: { Accept: "application/json" },
         });
 
         if (!res.ok) {
@@ -66,6 +72,7 @@ const ShopPage = () => {
         }
 
         const data = await res.json();
+        console.log("SHOP DATA:", data.shop);
         setShop(data.shop);
         fetchRatings();
       } catch (err) {
@@ -81,10 +88,7 @@ const ShopPage = () => {
   const fetchRatings = async () => {
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/shops/${id}/ratings`, {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       });
 
       if (res.ok) {
@@ -92,10 +96,7 @@ const ShopPage = () => {
         setRatings(data.ratings || []);
         setAverageRating(data.average_rating || 0);
         setRatingCount(data.total_ratings || 0);
-        
-        if (data.user_rating) {
-          setUserRating(data.user_rating.rating || 0);
-        }
+        if (data.user_rating) setUserRating(data.user_rating.rating || 0);
       }
     } catch (error) {
       console.error("Error fetching ratings:", error);
@@ -103,34 +104,20 @@ const ShopPage = () => {
   };
 
   const handleSubmitRating = async () => {
-    if (!token) {
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
-    }
-
-    if (userRating === 0) {
-      alert("Please select a rating");
-      return;
-    }
+    if (!token) return navigate("/login", { state: { from: window.location.pathname } });
+    if (userRating === 0) return alert("Please select a rating");
 
     setIsSubmittingRating(true);
     try {
-      const url = editingRatingId 
+      const url = editingRatingId
         ? `http://127.0.0.1:8000/api/shops/${id}/ratings/${editingRatingId}`
         : `http://127.0.0.1:8000/api/shops/${id}/ratings`;
-      
       const method = editingRatingId ? "PUT" : "POST";
-      
+
       const res = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          rating: userRating,
-          comment: ratingComment,
-        }),
+        method,
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ rating: userRating, comment: ratingComment }),
       });
 
       if (res.ok) {
@@ -139,23 +126,17 @@ const ShopPage = () => {
         setRatingComment("");
         setEditingRatingId(null);
         alert(editingRatingId ? "Rating updated successfully!" : "Thank you for your rating!");
-      } else {
-        throw new Error("Failed to submit rating");
-      }
+      } else throw new Error("Failed to submit rating");
     } catch (error) {
-      console.error("Error submitting rating:", error);
+      console.error(error);
       alert("Failed to submit rating. Please try again.");
-    } finally {
-      setIsSubmittingRating(false);
+    } finally { 
+      setIsSubmittingRating(false); 
     }
   };
 
   const handleEditRating = (rating) => {
-    if (!token) {
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
-    }
-    
+    if (!token) return navigate("/login", { state: { from: window.location.pathname } });
     setUserRating(rating.rating);
     setRatingComment(rating.comment || "");
     setEditingRatingId(rating.id);
@@ -163,60 +144,34 @@ const ShopPage = () => {
   };
 
   const handleDeleteRating = async (ratingId) => {
-    if (!token) {
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
-    }
-
-    if (!window.confirm("Are you sure you want to delete this rating?")) {
-      return;
-    }
+    if (!token) return navigate("/login", { state: { from: window.location.pathname } });
+    if (!window.confirm("Are you sure you want to delete this rating?")) return;
 
     setDeletingRatingId(ratingId);
     try {
       const res = await fetch(`http://127.0.0.1:8000/api/shops/${id}/ratings/${ratingId}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
       if (res.ok) {
         fetchRatings();
         alert("Rating deleted successfully!");
-        
-        const userRatingExists = ratings.find(r => r.id === ratingId);
-        if (userRatingExists) {
-          setUserRating(0);
-        }
-      } else {
-        throw new Error("Failed to delete rating");
-      }
+        if (ratings.find(r => r.id === ratingId)) setUserRating(0);
+      } else throw new Error("Failed to delete rating");
     } catch (error) {
-      console.error("Error deleting rating:", error);
+      console.error(error);
       alert("Failed to delete rating. Please try again.");
-    } finally {
-      setDeletingRatingId(null);
+    } finally { 
+      setDeletingRatingId(null); 
     }
   };
 
   const renderStars = (rating, interactive = false, onRate = null) => {
     return (
       <div className={`star-rating ${interactive ? 'interactive' : ''}`}>
-        {[1, 2, 3, 4, 5].map((star) => {
-          let starChar = '☆';
-          let isFilled = false;
-          let isHalf = false;
-          
-          if (star <= Math.floor(rating)) {
-            starChar = '★';
-            isFilled = true;
-          } else if (star === Math.ceil(rating) && rating % 1 >= 0.5) {
-            // For half star - we'll use CSS to style it
-            starChar = '★';
-            isHalf = true;
-          }
-          
+        {[1, 2, 3, 4, 5].map(star => {
+          let isFilled = star <= Math.floor(rating);
+          let isHalf = star === Math.ceil(rating) && rating % 1 >= 0.5;
           return (
             <span
               key={star}
@@ -224,7 +179,7 @@ const ShopPage = () => {
               onClick={() => interactive && onRate && onRate(star)}
               style={{ cursor: interactive ? 'pointer' : 'default' }}
             >
-              {starChar}
+              ★
             </span>
           );
         })}
@@ -242,6 +197,12 @@ const ShopPage = () => {
   const shopCart = getShopCart(parseInt(id));
   const shopCartCount = getShopCartCount(parseInt(id));
   const shopCartTotal = getShopCartTotal(parseInt(id));
+  const subtotal = parseFloat(shopCartTotal || 0);
+  const total = subtotal;
+
+  const categoryColors = getShopCategoryColors();
+  const categoryIcon = getShopCategoryIcon();
+  const formattedCategory = shop ? formatCategoryName(shop.category) : "Shop";
 
   const handleAddToCart = (product) => {
     globalAddToCart({
@@ -261,123 +222,113 @@ const ShopPage = () => {
   const handleRemoveFromCart = (productId) => globalRemoveFromCart(productId, shop.id);
 
   const handleCheckout = () => {
-    if (!token) {
-      navigate("/login", { state: { from: { pathname: "/checkout" } } });
-    } else {
-      navigate("/checkout");
-    }
+    if (!token) navigate("/login", { state: { from: { pathname: "/checkout" } } });
+    else navigate("/checkout");
   };
 
+  // FIXED: Back button handler that preserves BOTH category AND search term
   const handleBackToShops = () => {
-    navigate("/");
+    // Get saved filters from sessionStorage
+    const lastCategory = sessionStorage.getItem('lastCategory') || 'all';
+    const lastSearch = sessionStorage.getItem('lastSearch') || '';
+    
+    console.log("Going back with category:", lastCategory, "search:", lastSearch);
+    
+    // Pass both category and search term back to the home page
+    navigate('/', { 
+      state: { 
+        selectedCategory: lastCategory,
+        searchTerm: lastSearch,
+        preserveFilter: true,
+        fromShop: true
+      } 
+    });
   };
 
-  const filteredProducts = activeTab === "all" 
-    ? shop.products 
+  const filteredProducts = activeTab === "all"
+    ? shop.products
     : shop.products.filter(p => p.category === activeTab);
-
-  const subtotal = parseFloat(shopCartTotal || 0);
-  const serviceFee = subtotal * 0.10;
-  const total = subtotal + serviceFee;
-
-  const categoryColors = getShopCategoryColors();
-  const categoryIcon = getShopCategoryIcon();
-  const formattedCategory = shop ? formatCategoryName(shop.category) : "Shop";
 
   return (
     <div className="shop-page">
-      {/* ===== BACK TO SHOPS BUTTON ===== */}
+      {/* ===== BACK BUTTON ===== */}
       <div className="shop-page-top-bar">
-        <button 
-          className="back-to-shops-top"
-          onClick={handleBackToShops}
-        >
+        <button className="back-to-shops-top" onClick={handleBackToShops}>
           ← Back to All Shops
         </button>
       </div>
 
       {/* ===== SHOP HEADER ===== */}
-      <div 
-        className="shop-header"
-        style={{ 
-          background: categoryColors.gradient,
-          '--category-color': categoryColors.primary,
-          '--category-gradient': categoryColors.gradient 
-        }}
-      >
+      <div className="shop-header" style={{
+        background: categoryColors.gradient,
+        '--category-color': categoryColors.primary,
+        '--category-gradient': categoryColors.gradient
+      }}>
         <div className="shop-header-content">
           <div className="shop-header-image">
-            {shop.image ? (
-              <img src={shop.image} alt={shop.name} />
-            ) : (
-              <div 
-                className="shop-initials-logo"
-                style={{ background: categoryColors.gradient }}
-              >
+            {shop.image ? <img src={shop.image} alt={shop.name} /> :
+              <div className="shop-initials-logo" style={{ background: categoryColors.gradient }}>
                 <span>{categoryIcon}</span>
-              </div>
-            )}
+              </div>}
           </div>
-          
+
           <div className="shop-header-info">
             <h1>{shop.name}</h1>
             <p className="shop-description">{shop.description}</p>
-            
-            {/* FIXED RATING DISPLAY */}
+
+            {/* Rating */}
             <div className="shop-rating-display-header">
               <div className="rating-display">
-                <div className="rating-stars-display">
-                  {renderStars(averageRating)}
-                </div>
+                <div className="rating-stars-display">{renderStars(averageRating)}</div>
                 <div className="rating-score-display">
                   <span className="rating-number">{averageRating.toFixed(1)}</span>
                   <span className="rating-count">({ratingCount} {ratingCount === 1 ? 'review' : 'reviews'})</span>
                 </div>
               </div>
-              
-              <button 
-                className="rate-shop-btn"
-                onClick={() => {
-                  setEditingRatingId(null);
-                  setRatingComment("");
-                  setUserRating(0);
-                  setShowRatingForm(!showRatingForm);
-                }}
-              >
+              <button className="rate-shop-btn" onClick={() => { 
+                setEditingRatingId(null); 
+                setRatingComment(""); 
+                setUserRating(0); 
+                setShowRatingForm(!showRatingForm); 
+              }}>
                 {userRating > 0 ? 'Update Rating' : 'Rate this Shop'}
               </button>
             </div>
-            
-            <div className="shop-meta">
-              <div className="meta-item category-display">
-                <span className="meta-icon">{categoryIcon}</span>
-                <span className="category-name">{formattedCategory}</span>
-              </div>
+
+            {/* Shop Hours & Status - with proper spacing */}
+            <div className="shop-meta-container">
               <div className="meta-item">
-                <span className="meta-icon">📍</span>
-                <span>{shop.address || "City Center"}</span>
+                <span className="meta-icon">⏰</span>
+                <span>
+                  {shop.open_time && shop.close_time
+                    ? `${formatTime(shop.open_time)} - ${formatTime(shop.close_time)}`
+                    : "Hours not set"}
+                  {shop.is_closed_today ? " (Closed today)" : ""}
+                </span>
               </div>
+
               <div className="meta-item">
-                <span className="meta-icon">📞</span>
-                <span>{shop.phone || "Contact Available"}</span>
+                <span className="meta-icon">{isOpen ? "🟢" : "🔴"}</span>
+                <span style={{ fontWeight: "bold", color: isOpen ? "#16a34a" : "#dc2626" }}>
+                  {isOpen ? "OPEN" : "CLOSED"}
+                </span>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* ===== MAIN CONTENT AREA ===== */}
+      {/* ===== MAIN CONTENT ===== */}
       <div className="shop-main-content">
-        {/* Container for side-by-side layout */}
         <div className="shop-content-container">
-          
-          {/* ===== PRODUCTS SECTION (LEFT SIDE) ===== */}
+
+          {/* ===== PRODUCTS SECTION ===== */}
           <div className="products-section">
             <div className="products-header">
               <h2>Menu Items</h2>
               <div className="category-tabs">
-                <button
-                  className={`category-tab ${activeTab === "all" ? "active" : ""}`}
+                <button 
+                  className={`category-tab ${activeTab === "all" ? "active" : ""}`} 
                   onClick={() => setActiveTab("all")}
                 >
                   All Items
@@ -386,7 +337,7 @@ const ShopPage = () => {
             </div>
 
             <div className="products-grid">
-              {filteredProducts.map((product) => {
+              {filteredProducts.map(product => {
                 const quantityInCart = globalQuantities[product.id] || 0;
                 return (
                   <div key={product.id} className="product-card">
@@ -394,24 +345,22 @@ const ShopPage = () => {
                       <h3>{product.name}</h3>
                       <div className="product-price-row">
                         <div className="product-price">MMK {product.price.toFixed(2)}</div>
-                        {quantityInCart > 0 && (
-                          <div className="in-cart-badge">In Cart: {quantityInCart}</div>
-                        )}
+                        {quantityInCart > 0 && <div className="in-cart-badge">In Cart: {quantityInCart}</div>}
                       </div>
                     </div>
-                    
+
                     <div className="product-actions">
                       {quantityInCart > 0 ? (
                         <div className="quantity-controls">
                           <button 
-                            onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)}
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)} 
                             className="quantity-btn minus"
                           >
                             -
                           </button>
                           <span className="quantity-display">{quantityInCart}</span>
                           <button 
-                            onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)}
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)} 
                             className="quantity-btn plus"
                           >
                             +
@@ -419,7 +368,7 @@ const ShopPage = () => {
                         </div>
                       ) : (
                         <button 
-                          className="add-to-cart-btn"
+                          className="add-to-cart-btn" 
                           onClick={() => handleAddToCart(product)}
                         >
                           Add to Cart
@@ -432,7 +381,7 @@ const ShopPage = () => {
             </div>
           </div>
 
-          {/* ===== ORDER SUMMARY CARD (RIGHT SIDE) ===== */}
+          {/* ===== ORDER SUMMARY ===== */}
           <div className="order-summary-section">
             <div className="order-summary-card">
               <div className="order-summary-header">
@@ -441,19 +390,16 @@ const ShopPage = () => {
                   <div className="items-count">{shopCartCount} items</div>
                 </div>
                 {shopCartCount > 0 && (
-                  <button 
-                    className="clear-all-btn"
-                    onClick={() => clearShopCart(shop.id)}
-                  >
+                  <button className="clear-all-btn" onClick={() => clearShopCart(shop.id)}>
                     Clear All
                   </button>
                 )}
               </div>
-              
+
               {shopCartCount > 0 ? (
                 <>
                   <div className="order-items-list">
-                    {shopCart.map((item) => (
+                    {shopCart.map(item => (
                       <div key={item.id} className="order-item">
                         <div className="item-main">
                           <span className="item-name">{item.name}</span>
@@ -462,14 +408,14 @@ const ShopPage = () => {
                         <div className="item-controls">
                           <div className="quantity-selector">
                             <button 
-                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)}
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)} 
                               className="qty-btn"
                             >
                               -
                             </button>
                             <span className="qty-display">{globalQuantities[item.id] || 0}</span>
                             <button 
-                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)}
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)} 
                               className="qty-btn"
                             >
                               +
@@ -480,7 +426,7 @@ const ShopPage = () => {
                               MMK {((item.price || 0) * (globalQuantities[item.id] || 0)).toFixed(2)}
                             </span>
                             <button 
-                              onClick={() => handleRemoveFromCart(item.id)}
+                              onClick={() => handleRemoveFromCart(item.id)} 
                               className="remove-btn"
                             >
                               Remove
@@ -490,26 +436,19 @@ const ShopPage = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="price-breakdown">
                     <div className="price-row">
                       <span>Subtotal ({shopCartCount} items)</span>
                       <span>MMK {subtotal.toFixed(2)}</span>
-                    </div>
-                    <div className="price-row">
-                      <span>Service Fee</span>
-                      <span>MMK {serviceFee.toFixed(2)}</span>
                     </div>
                     <div className="price-row total">
                       <span>Total</span>
                       <span>MMK {total.toFixed(2)}</span>
                     </div>
                   </div>
-                  
-                  <button 
-                    className="checkout-btn"
-                    onClick={handleCheckout}
-                  >
+
+                  <button className="checkout-btn" onClick={handleCheckout}>
                     Proceed to Checkout
                   </button>
                 </>
@@ -520,60 +459,48 @@ const ShopPage = () => {
                   <small>Add items from the menu to get started!</small>
                 </div>
               )}
-              
+
               {shopCartCount > 0 && (
                 <div className="shop-actions">
-                  <button 
-                    className="continue-shopping-btn"
-                    onClick={() => navigate("/")}
-                  >
+                  <button className="continue-shopping-btn" onClick={() => navigate("/")}>
                     Continue Shopping
                   </button>
                 </div>
               )}
             </div>
           </div>
-        </div> {/* End of shop-content-container */}
+        </div>
 
-        {/* ===== REVIEWS SECTION (BELOW) ===== */}
+        {/* ===== REVIEWS SECTION ===== */}
         <div className="shop-reviews-section">
-          <h2 className="reviews-title">
-            Customer Reviews ({ratingCount})
-          </h2>
+          <h2 className="reviews-title">Customer Reviews ({ratingCount})</h2>
 
           {ratings.length === 0 ? (
-            <p className="no-reviews">
-              No reviews yet. Be the first to review this shop!
-            </p>
+            <p className="no-reviews">No reviews yet. Be the first to review this shop!</p>
           ) : (
             <div className="reviews-list">
-              {ratings.map((review) => (
+              {ratings.map(review => (
                 <div key={review.id} className="review-card">
                   <div className="review-header">
                     <div className="review-user-info">
-                      <strong className="review-user">
-                        {review.user?.name || "Anonymous"}
-                      </strong>
-                      {review.is_own && (
-                        <span className="own-review-badge">Your Review</span>
-                      )}
+                      <strong className="review-user">{review.user?.name || "Anonymous"}</strong>
+                      {review.is_own && <span className="own-review-badge">Your Review</span>}
                     </div>
-                    
+
                     <div className="review-rating-actions">
                       {renderStars(review.rating)}
-                      
                       {review.is_own && (
                         <div className="review-actions">
                           <button 
-                            className="edit-review-btn"
-                            onClick={() => handleEditRating(review)}
+                            className="edit-review-btn" 
+                            onClick={() => handleEditRating(review)} 
                             disabled={deletingRatingId === review.id}
                           >
                             Edit
                           </button>
                           <button 
-                            className="delete-review-btn"
-                            onClick={() => handleDeleteRating(review.id)}
+                            className="delete-review-btn" 
+                            onClick={() => handleDeleteRating(review.id)} 
                             disabled={deletingRatingId === review.id}
                           >
                             {deletingRatingId === review.id ? 'Deleting...' : 'Delete'}
@@ -583,86 +510,75 @@ const ShopPage = () => {
                     </div>
                   </div>
 
-                  {review.comment && (
-                    <p className="review-comment">
-                      "{review.comment}"
-                    </p>
-                  )}
-
+                  {review.comment && <p className="review-comment">"{review.comment}"</p>}
                   <small className="review-date">
                     {new Date(review.created_at).toLocaleDateString()}
-                    {review.updated_at !== review.created_at && 
-                      ` (Updated: ${new Date(review.updated_at).toLocaleDateString()})`
-                    }
+                    {review.updated_at !== review.created_at &&
+                      ` (Updated: ${new Date(review.updated_at).toLocaleDateString()})`}
                   </small>
                 </div>
               ))}
             </div>
           )}
         </div>
-      </div> {/* End of shop-main-content */}
+      </div>
 
-      {/* ===== RATING MODAL ===== */}
+      {/* ===== BEAUTIFUL RATING MODAL ===== */}
       {showRatingForm && (
-        <div className="rating-modal-overlay">
-          <div className="rating-modal">
+        <div className="rating-modal-overlay" onClick={() => setShowRatingForm(false)}>
+          <div className="rating-modal" onClick={e => e.stopPropagation()}>
             <div className="rating-modal-header">
-              <h3>{editingRatingId ? 'Edit Your Rating' : `Rate ${shop.name}`}</h3>
-              <button 
-                className="close-modal-btn"
-                onClick={() => {
-                  setShowRatingForm(false);
-                  setEditingRatingId(null);
-                  setRatingComment("");
-                  setUserRating(0);
-                }}
-              >
-                ×
-              </button>
+              <h3>{editingRatingId ? 'Edit Your Review' : 'Rate This Shop'}</h3>
+              <button className="close-modal-btn" onClick={() => setShowRatingForm(false)}>×</button>
             </div>
-            
+
             <div className="rating-modal-body">
-              <div className="rating-stars-input">
-                {renderStars(userRating, true, setUserRating)}
-                <div className="rating-label">
-                  {userRating === 0 ? 'Select Rating' : `${userRating} star${userRating > 1 ? 's' : ''}`}
+              <div className="rating-section">
+                <span className="rating-label">YOUR RATING</span>
+                <div className="rating-stars-input">
+                  {renderStars(userRating, true, setUserRating)}
                 </div>
+                {userRating > 0 && (
+                  <div className="selected-rating">
+                    <span>You selected {userRating} {userRating === 1 ? 'star' : 'stars'}</span>
+                  </div>
+                )}
               </div>
-              
-              <div className="rating-comment">
-                <label htmlFor="ratingComment">Comment (optional):</label>
+
+              <div className="comment-section">
+                <label>YOUR COMMENT</label>
                 <textarea
-                  id="ratingComment"
                   value={ratingComment}
-                  onChange={(e) => setRatingComment(e.target.value)}
-                  placeholder="Share your experience with this shop..."
-                  rows="4"
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setRatingComment(e.target.value);
+                    }
+                  }}
+                  placeholder="Share your experience... (optional)"
+                  maxLength={500}
                 />
               </div>
-            </div>
-            
-            <div className="rating-modal-footer">
-              <button 
-                className="cancel-btn"
-                onClick={() => {
-                  setShowRatingForm(false);
-                  setEditingRatingId(null);
-                  setRatingComment("");
-                  setUserRating(0);
-                }}
-              >
-                Cancel
-              </button>
-              <button 
-                className="submit-rating-btn"
-                onClick={handleSubmitRating}
-                disabled={isSubmittingRating || userRating === 0}
-              >
-                {isSubmittingRating 
-                  ? (editingRatingId ? 'Updating...' : 'Submitting...') 
-                  : (editingRatingId ? 'Update Rating' : 'Submit Rating')
-                }
-              </button>
+
+              <div className="rating-modal-footer">
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => setShowRatingForm(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className={`submit-rating-btn ${isSubmittingRating ? 'loading' : ''}`}
+                  onClick={handleSubmitRating} 
+                  disabled={isSubmittingRating || userRating === 0}
+                >
+                  {isSubmittingRating 
+                    ? 'Submitting...' 
+                    : editingRatingId 
+                      ? 'Update Review' 
+                      : 'Submit Review'
+                  }
+                </button>
+              </div>
             </div>
           </div>
         </div>
