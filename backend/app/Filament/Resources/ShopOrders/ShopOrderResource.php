@@ -52,7 +52,8 @@ class ShopOrderResource extends Resource
                 'user',
                 'orderItems.product.shop.owner', // eager load everything needed
             ])
-            ->where('status', 'completed');
+            ->where('status', 'completed')
+            ->latest();
 
         if (! $user) {
             return $query;
@@ -84,7 +85,8 @@ class ShopOrderResource extends Resource
     // Table (list page)
     public static function table(Table $table): Table
     {
-        return ShopOrdersTable::configure($table);
+        return ShopOrdersTable::configure($table)
+            ->defaultSort('created_at', 'desc');
     }
 
     // No relations needed here

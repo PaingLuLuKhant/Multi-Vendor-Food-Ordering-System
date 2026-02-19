@@ -2,9 +2,11 @@
     <form wire:submit.prevent="submit">
         {{ $this->form }}
 
-        <x-filament::button type="submit">
-            Submit for Approval
-        </x-filament::button>
+        <div style="margin-top: 20px;">
+            <x-filament::button type="submit">
+                Submit for Approval
+            </x-filament::button>
+        </div>
     </form>
 
     @if(session()->has('success'))

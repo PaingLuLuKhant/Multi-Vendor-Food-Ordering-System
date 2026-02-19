@@ -18,10 +18,19 @@ class EditShop extends Page
 {
     use InteractsWithSchemas;
 
+<<<<<<< HEAD
     protected static ?string $navigationLabel = 'Edit Shop';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
     protected static string|UnitEnum|null $navigationGroup = 'Shop';
 
+=======
+    protected static ?string $navigationLabel = 'Edit Your Shop';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
+    protected static string|UnitEnum|null $navigationGroup = 'Shop';
+
+    protected static ?int $navigationSort = 3;
+
+>>>>>>> pllkdev
     protected string $view = 'filament.pages.edit-shop';
 
     public Shop $shop;

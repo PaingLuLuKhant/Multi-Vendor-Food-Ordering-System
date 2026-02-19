@@ -21,6 +21,7 @@ class ShopSetup extends Page implements Forms\Contracts\HasForms
     public $category;
 
     protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-building-storefront';
+    protected static ?string $navigationLabel = 'Setup Your Shop Here';
     protected string $view = 'filament.pages.shop-setup';
 
     public function mount(): void
@@ -37,12 +38,26 @@ class ShopSetup extends Page implements Forms\Contracts\HasForms
 
     protected function getFormSchema(): array
     {
+        $categories = [
+            'Myanmar Food',
+            'Chinese Food',
+            'Thai Cuisine',
+            'Fast Food',
+            'Italian Food',
+            'Seafood',
+            'Japanese Food',
+            'Vegan',
+        ];
+
         return [
             TextInput::make('name')->required()->label('Name'),
             TextInput::make('phone')->required()->label('Phone'),
             TextInput::make('address')->required()->label('Address'),
             Textarea::make('description')->required()->label('Description'),
-            TextInput::make('category')->required()->label('Category'),
+            Forms\Components\Select::make('category')
+            ->options(array_combine($categories, $categories))
+            ->required()
+            ->label('Category'),
         ];
     }
 

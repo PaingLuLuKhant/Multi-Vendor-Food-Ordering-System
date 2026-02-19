@@ -9,6 +9,7 @@
                     <tr>
                         <th>#</th>
                         <th>Shop Name</th>
+                        <th>Shop Category</th>
                         <th>Owner Name</th>
                         <th>Owner Email</th>
                         <th>Status</th>
@@ -20,19 +21,21 @@
                         <tr>
                             <td>{{ $index + 1 }}</td> <!-- AUTO ROW NUMBER -->
                             <td>{{ $shop->name }}</td>
+                            <td>{{ $shop->category }}</td>
                             <td>{{ $shop->owner->name }}</td>
                             <td>{{ $shop->owner->email }}</td>
                             <td>{{ ucfirst($shop->status) }}</td>
                             <td>
                                 <button 
                                     wire:click="approveShop({{ $shop->id }})"
-                                    class="approve-btn">
+                                    class="approve-btn"
+                                    style="margin-right: 5px;">
                                     Approve
                                 </button>
                                 <button 
                                     wire:click="denyShop({{ $shop->id }})"
                                     class="deny-btn">
-                                    Deny
+                                    Decline
                                 </button>
                             </td>
                         </tr>
@@ -74,7 +77,7 @@
         /* Header background */
         .styled-table thead {
             border-radius: 30px;
-            background-color: #f3f4f627; /* light grey */
+            background-color: #64606027; /* light grey */
             color: #ffffff; /* dark text */
             font-weight: 600;
         }
