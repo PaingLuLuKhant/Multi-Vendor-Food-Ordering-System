@@ -1,23 +1,25 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
+import { useAuth } from '../../context/AuthContext'; // Add this import
 import './CartPage.css';
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { 
-    cart, 
-    quantities, 
-    removeFromCart, 
-    updateQuantity, 
-    clearCart, 
-    getCartTotal 
+  const { token } = useAuth(); // Add this line
+  const {
+    cart,
+    quantities,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    getCartTotal
   } = useCart();
 
-
-const deliveryFee = 2.99;
-const subtotal = parseFloat(getCartTotal());
-const total = subtotal + deliveryFee ;
+  const deliveryFee = 2.99;
+  const subtotal = parseFloat(getCartTotal());
+  const total = subtotal + deliveryFee;
+  
   if (cart.length === 0) {
     return (
       <div className="cart-page">
@@ -55,7 +57,6 @@ const total = subtotal + deliveryFee ;
                   <div className="item-details">
                     <h3>{item.name}</h3>
                     <p className="item-shop">{item.shopName}</p>
-                    {/* <p className="item-category">{item.category}</p> */}
                   </div>
                   <div className="item-controls">
                     <div className="quantity-control">
@@ -99,14 +100,6 @@ const total = subtotal + deliveryFee ;
                 <span>Delivery Fee</span>
                 <span>MMK {deliveryFee.toFixed(2)}</span>
               </div>
-              {/* <div className="summary-row">
-                <span>Delivery Fee</span>
-                <span>MMK {deliveryFee.toFixed(2)}</span>
-              </div> */}
-              {/* <div className="summary-row">
-                <span>Service Fee</span>
-                <span>MMK {serviceFee.toFixed(2)}</span>
-              </div> */}
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>
@@ -114,14 +107,20 @@ const total = subtotal + deliveryFee ;
               </div>
             </div>
 
-            <button 
-              onClick={() => navigate('/checkout')}
+            <button
+              onClick={() => {
+                if (!token) {
+                  navigate('/login', { state: { from: { pathname: '/checkout' } } });
+                } else {
+                  navigate('/checkout');
+                }
+              }}
               className="checkout-btn"
             >
               Proceed to Checkout
             </button>
 
-            <button 
+            <button
               onClick={() => navigate('/')}
               className="continue-shopping-btn"
             >
