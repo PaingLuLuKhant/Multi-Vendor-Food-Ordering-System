@@ -38,12 +38,26 @@ class ShopSetup extends Page implements Forms\Contracts\HasForms
 
     protected function getFormSchema(): array
     {
+        $categories = [
+            'Myanmar Food',
+            'Chinese Food',
+            'Thai Cuisine',
+            'Fast Food',
+            'Italian Food',
+            'Seafood',
+            'Japanese Food',
+            'Vegan',
+        ];
+
         return [
             TextInput::make('name')->required()->label('Name'),
             TextInput::make('phone')->required()->label('Phone'),
             TextInput::make('address')->required()->label('Address'),
             Textarea::make('description')->required()->label('Description'),
-            TextInput::make('category')->required()->label('Category'),
+            Forms\Components\Select::make('category')
+            ->options(array_combine($categories, $categories))
+            ->required()
+            ->label('Category'),
         ];
     }
 

@@ -12,7 +12,7 @@ class ViewShop extends Page
     protected static string|UnitEnum|null $navigationGroup = 'Shop';
     protected static ?string $navigationLabel = 'View Your Shop';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-storefront';
-    protected static ?int $navigationSort = 1;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.view-shop';
 

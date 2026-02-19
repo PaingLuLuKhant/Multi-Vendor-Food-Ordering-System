@@ -24,7 +24,8 @@
 
         /* Optional: move button slightly to the right */
         .save-btn {
-            margin-left: 20px; /* adjust as needed */
+            margin-top: 20px;
+            margin-left: 0px; /* adjust as needed */
         }
     </style>
 </x-filament::page>
