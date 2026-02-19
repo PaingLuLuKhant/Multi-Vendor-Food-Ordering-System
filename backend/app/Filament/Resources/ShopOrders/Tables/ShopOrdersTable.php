@@ -49,7 +49,7 @@
 //                     ->label('Unit Price')
 //                     ->money('MMK'),
 
-                
+
 
 //                 TextColumn::make('total')
 //                     ->label('Total')
@@ -82,7 +82,7 @@
 //             ->recordActions([
 //                 // ViewAction::make(),
 //             ]);
-       
+
 //     }
 // }
 
@@ -170,7 +170,7 @@ class ShopOrdersTable
                     ->color(fn() => 'success')
                     ->sortable(),
 
-                
+
 
                 // TextColumn::make('delivered_at')
                 //     ->label('Delivered at')

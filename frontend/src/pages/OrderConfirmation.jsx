@@ -48,10 +48,22 @@ const OrderConfirmation = () => {
     items = [],
     quantities = {},
     subtotal = '0.00',
-    deliveryFee = '0.00',
-    // serviceFee = '1.49',
+
     total = '0.00'
   } = orderDetails;
+
+  const formatMyanmarPhone = (phoneNumber) => {
+  if (!phoneNumber) return '';
+
+  const clean = phoneNumber.replace(/\D/g, '');
+
+  // Remove leading 0 if exists
+  if (clean.startsWith('0')) {
+    return clean.slice(1);
+  }
+
+  return clean;
+};
 
   return (
     <div className="order-confirmation">
@@ -70,7 +82,7 @@ const OrderConfirmation = () => {
           </div>
           {phone && (
             <div className="customer-phone">
-              We'll contact you at: <strong>+95 {phone}</strong>
+              We'll contact you at: <strong>+95{formatMyanmarPhone(phone)}</strong>
             </div>
           )}
         </div>
@@ -96,7 +108,7 @@ const OrderConfirmation = () => {
                 {phone && (
                   <div className="info-item">
                     <span className="info-label">Phone:</span>
-                    <span className="info-value">+95 {phone}</span>
+                    <span className="info-value">+95{formatMyanmarPhone(phone)}</span>
                   </div>
                 )}
                 <div className="info-item">
@@ -160,10 +172,10 @@ const OrderConfirmation = () => {
                   <span>Subtotal</span>
                   <span>MMK {parseFloat(subtotal).toFixed(2)}</span>
                 </div>
-                <div className="summary-row">
+                {/* <div className="summary-row">
                   <span>Delivery Fee</span>
                   <span>MMK {parseFloat(deliveryFee).toFixed(2)}</span>
-                </div>
+                </div> */}
                 {/* <div className="summary-row">
                   <span>Service Fee</span>
                   <span>MMK {parseFloat(serviceFee).toFixed(2)}</span>
@@ -178,27 +190,19 @@ const OrderConfirmation = () => {
 
           {/* Delivery Information */}
           <div className="delivery-section">
-            <div className="delivery-card">
+            {/* <div className="delivery-card">
               <div className="delivery-icon">🚚</div>
               <h3>Delivery Information</h3>
               <div className="delivery-details">
-                <div className="delivery-item">
-                  <span className="delivery-label">Estimated Delivery:</span>
-                  <span className="delivery-value">20-30 minutes</span>
-                </div>
+                
                 <div className="delivery-item">
                   <span className="delivery-label">Delivery Address:</span>
                   <span className="delivery-value">{address}</span>
                 </div>
-                <div className="delivery-item">
-                  <span className="delivery-label">Status:</span>
-                  <span className="delivery-value status-preparing">Preparing your order</span>
-                </div>
-              </div>
-              <div className="progress-bar">
-                <div className="progress-fill" style={{ width: '25%' }}></div>
-              </div>
-              <div className="progress-steps">
+                
+              </div> */}
+              
+              {/* <div className="progress-steps">
                 <div className="step active">
                   <div className="step-dot"></div>
                   <span>Order Placed</span>
@@ -215,8 +219,8 @@ const OrderConfirmation = () => {
                   <div className="step-dot"></div>
                   <span>Delivered</span>
                 </div>
-              </div>
-            </div>
+              </div> */}
+            {/* </div> */}
 
             <div className="support-card">
               <h3>Need Help?</h3>
@@ -228,7 +232,7 @@ const OrderConfirmation = () => {
                 </div>
                 <div className="contact-item">
                   <span className="contact-icon">✉️</span>
-                  <span>support@posmarketplace.com</span>
+                  <span>support@HungryHub.com</span>
                 </div>
               </div>
             </div>

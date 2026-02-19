@@ -125,7 +125,7 @@
 /* ========== HEADER SECTION ========== */
 .shop-header {
   background: linear-gradient(135deg, #444444 0%, #222222 100%);
-  border-radius: var(--radius-2xl);
+  /* border-radius: var(--radius-2xl); */
   padding: 2rem;
   margin-bottom: 2rem;
   box-shadow: var(--shadow-xl);

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import ShopCard from "./ShopCard";
 import "./CustomerDashboard.css";
 import { useAuth } from "../../context/AuthContext";
@@ -6,6 +7,7 @@ import { getCategoryColors, getCategoryIcon, formatCategoryName } from "/utils/c
 
 const CustomerDashboard = () => {
   const { token, user } = useAuth();
+  const location = useLocation();
 
   const [shops, setShops] = useState([]);
   const [filteredShops, setFilteredShops] = useState([]);
@@ -25,6 +27,51 @@ const CustomerDashboard = () => {
   
   // Track scroll after category click
   const [shouldScroll, setShouldScroll] = useState(false);
+
+  // Load saved filters from sessionStorage on initial load
+  useEffect(() => {
+    const savedCategory = sessionStorage.getItem('lastCategory');
+    const savedSearch = sessionStorage.getItem('lastSearch');
+    
+    if (savedCategory && savedCategory !== 'all') {
+      console.log("Loading saved category from session:", savedCategory);
+      setSelectedCategory(savedCategory);
+    }
+    
+    if (savedSearch) {
+      console.log("Loading saved search from session:", savedSearch);
+      setSearchTerm(savedSearch);
+    }
+  }, []);
+
+  // Handle returning from shop page with filters
+  useEffect(() => {
+    console.log("Location state:", location.state); // For debugging
+    
+    if (location.state?.preserveFilter) {
+      // Restore category if provided
+      if (location.state.selectedCategory && location.state.selectedCategory !== 'all') {
+        console.log("Restoring category from navigation:", location.state.selectedCategory);
+        setSelectedCategory(location.state.selectedCategory);
+        // Save to sessionStorage
+        sessionStorage.setItem('lastCategory', location.state.selectedCategory);
+      }
+      
+      // Restore search term if provided
+      if (location.state.searchTerm) {
+        console.log("Restoring search term from navigation:", location.state.searchTerm);
+        setSearchTerm(location.state.searchTerm);
+        // Save to sessionStorage
+        sessionStorage.setItem('lastSearch', location.state.searchTerm);
+      }
+      
+      setShowFavoritesOnly(false);
+      setShouldScroll(true);
+      
+      // Clear the state so it doesn't persist on refresh
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Fetch shops from API
   useEffect(() => {
@@ -52,16 +99,16 @@ const CustomerDashboard = () => {
         setShops(shopsData);
         setFilteredShops(shopsData);
 
-              } catch (err) {
-                console.error("Error fetching shops:", err);
-                setError(err.message);
-              } finally {
-                setLoading(false);
-              }
-            };
+      } catch (err) {
+        console.error("Error fetching shops:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-            fetchShops();
-          }, [token]);
+    fetchShops();
+  }, [token]);
 
   // Fetch user's favorite shops
   useEffect(() => {
@@ -71,7 +118,7 @@ const CustomerDashboard = () => {
       setLoadingFavorites(true);
       try {
         console.log("Fetching favorites for user:", user.id);
-      const res = await fetch("http://127.0.0.1:8000/api/user/favorites", {
+        const res = await fetch("http://127.0.0.1:8000/api/user/favorites", {
           headers: {
             Accept: "application/json",
             Authorization: `Bearer ${token}`,
@@ -108,7 +155,7 @@ const CustomerDashboard = () => {
     fetchFavorites();
   }, [user, token]);
 
-  // Toggle favorite status for a shop - FIXED ENDPOINT
+  // Toggle favorite status for a shop
   const toggleFavorite = async (shopId) => {
     console.log("Toggling favorite for shop:", shopId);
     console.log("User:", user);
@@ -133,7 +180,6 @@ const CustomerDashboard = () => {
     setFavoriteStatuses(newFavoriteStatuses);
 
     try {
-      // ✅ FIXED: Use the correct endpoint from your FavoritesController
       const url = `http://127.0.0.1:8000/api/user/favorites/${shopId}/toggle`;
       console.log("Making request to:", url);
       
@@ -149,12 +195,10 @@ const CustomerDashboard = () => {
 
       console.log("Toggle response status:", res.status);
       
-      // Handle 401 unauthorized
       if (res.status === 401) {
         throw new Error("Please login to favorite shops. Status: 401");
       }
       
-      // Handle other errors
       if (!res.ok) {
         throw new Error(`Server error: ${res.status}`);
       }
@@ -207,14 +251,46 @@ const CustomerDashboard = () => {
     }
   };
 
-  // Filter logic - updated to include favorites filter
+  // Update search handler to save to session storage
+  const handleSearchChange = (e) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    sessionStorage.setItem('lastSearch', term);
+  };
+
+  // Clear search handler
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    sessionStorage.removeItem('lastSearch');
+  };
+
+  // Handle category click - save to sessionStorage
+  const handleCategoryClick = (category) => {
+    setSelectedCategory(category);
+    setSearchTerm("");
+    setShowFavoritesOnly(false);
+    setShouldScroll(true);
+    
+    // Save category to sessionStorage
+    if (category === 'all') {
+      sessionStorage.removeItem('lastCategory');
+    } else {
+      sessionStorage.setItem('lastCategory', category);
+    }
+    // Clear search when clicking category
+    sessionStorage.removeItem('lastSearch');
+  };
+
+  // Filter logic
   useEffect(() => {
     let filtered = [...shops];
 
+    // Apply category filter if not "all"
     if (selectedCategory !== "all") {
       filtered = filtered.filter(shop => shop.category === selectedCategory);
     }
 
+    // Apply search filter if search term exists
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -244,25 +320,13 @@ const CustomerDashboard = () => {
     }
   }, [shops, selectedCategory, searchTerm, shouldScroll, showFavoritesOnly, favoriteStatuses]);
 
-  const handleCategoryCardClick = (category) => {
-    setSelectedCategory(category);
-    setSearchTerm("");
-    setShowFavoritesOnly(false);
-    setShouldScroll(true);
-  };
-
-  const handleCategoryButtonClick = (category) => {
-    setSelectedCategory(category);
-    setSearchTerm("");
-    setShowFavoritesOnly(false);
-    setShouldScroll(true);
-  };
-
   const clearFilters = () => {
     setSelectedCategory("all");
     setSearchTerm("");
     setShowFavoritesOnly(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    sessionStorage.removeItem('lastCategory');
+    sessionStorage.removeItem('lastSearch');
   };
 
   const toggleFavoritesFilter = () => {
@@ -270,6 +334,8 @@ const CustomerDashboard = () => {
     if (!showFavoritesOnly) {
       setSelectedCategory("all");
       setSearchTerm("");
+      sessionStorage.removeItem('lastCategory');
+      sessionStorage.removeItem('lastSearch');
     }
     setShouldScroll(true);
   };
@@ -341,13 +407,13 @@ const CustomerDashboard = () => {
               type="text"
               placeholder="Search restaurants, cuisine, or dishes..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={handleSearchChange}
               className="search-input"
             />
             {searchTerm && (
               <button
                 type="button"
-                onClick={() => setSearchTerm("")}
+                onClick={handleClearSearch}
                 className="clear-search"
                 aria-label="Clear search"
               >
@@ -364,7 +430,7 @@ const CustomerDashboard = () => {
             <div className="category-buttons">
               <button
                 className={`category-btn ${selectedCategory === "all" ? "active" : ""}`}
-                onClick={() => handleCategoryButtonClick("all")}
+                onClick={() => handleCategoryClick("all")}
                 style={{ '--category-color': '#6B7280', '--category-gradient': 'linear-gradient(135deg, #6B7280 0%, #4B5563 100%)' }}
               >
                 <span className="category-icon">🏪</span>
@@ -380,7 +446,7 @@ const CustomerDashboard = () => {
                   <button
                     key={category}
                     className={`category-btn ${selectedCategory === category ? "active" : ""}`}
-                    onClick={() => handleCategoryButtonClick(category)}
+                    onClick={() => handleCategoryClick(category)}
                     style={{
                       '--category-color': categoryColors.primary,
                       '--category-gradient': categoryColors.gradient
@@ -435,6 +501,10 @@ const CustomerDashboard = () => {
                 <span className="favorites-heart">❤️</span> My Favorite Restaurants
                 {!user && <span className="login-required"> (Login Required)</span>}
               </>
+            ) : searchTerm ? (
+              <>
+                Search Results for "<span className="search-term">{searchTerm}</span>"
+              </>
             ) : selectedCategory === "all" ? (
               "All Restaurants"
             ) : (
@@ -442,14 +512,6 @@ const CustomerDashboard = () => {
             )}
             <span className="results-count"> ({filteredShops.length})</span>
           </h2>
-          <div className="sort-options">
-            <select className="sort-select" aria-label="Sort results">
-              <option>Recommended</option>
-              <option>Rating: High to Low</option>
-              <option>Delivery: Fastest</option>
-              <option>Price: Low to High</option>
-            </select>
-          </div>
         </div>
 
         {loadingFavorites && showFavoritesOnly ? (
@@ -477,14 +539,18 @@ const CustomerDashboard = () => {
             <h3>
               {showFavoritesOnly 
                 ? "No favorite restaurants yet" 
-                : "No restaurants found"}
+                : searchTerm 
+                  ? `No results found for "${searchTerm}"`
+                  : "No restaurants found"}
             </h3>
             <p>
               {showFavoritesOnly
                 ? user 
                   ? "Click the heart icon on any restaurant to add it to your favorites!"
                   : "Please login to save favorites"
-                : "Try adjusting your search or filters"}
+                : searchTerm
+                  ? "Try different keywords or browse by category"
+                  : "Try adjusting your search or filters"}
             </p>
             <button onClick={clearFilters} className="reset-filters-btn">
               {showFavoritesOnly ? "Browse All Restaurants" : "Reset Filters"}
@@ -494,7 +560,7 @@ const CustomerDashboard = () => {
       </div>
 
       {/* Featured Categories - Always visible */}
-      {!showFavoritesOnly && (
+      {!showFavoritesOnly && filteredShops.length > 0 && (
         <div className="featured-categories">
           <h2>Explore by Cuisine</h2>
           <div className="category-grid">
@@ -507,7 +573,7 @@ const CustomerDashboard = () => {
                 <div
                   key={category}
                   className="category-card"
-                  onClick={() => handleCategoryCardClick(category)}
+                  onClick={() => handleCategoryClick(category)}
                   style={{
                     '--category-color': categoryColors.primary,
                     '--category-gradient': categoryColors.gradient
@@ -525,7 +591,7 @@ const CustomerDashboard = () => {
 
       {/* Footer */}
       <div className="dashboard-footer">
-        <p>© 2024 Foodie POS Marketplace. All rights reserved.</p>
+        <p>© 2026 Hungry Hub Marketplace. All rights reserved.</p>
         <p>Fast delivery • Secure payments • 24/7 support</p>
         {!user && (
           <p className="login-notice">Login to save your favorite restaurants!</p>

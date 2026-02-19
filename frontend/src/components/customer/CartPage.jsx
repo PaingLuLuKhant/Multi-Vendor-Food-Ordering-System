@@ -16,9 +16,9 @@ const CartPage = () => {
     getCartTotal
   } = useCart();
 
-  const deliveryFee = 2.99;
+  
   const subtotal = parseFloat(getCartTotal());
-  const total = subtotal + deliveryFee;
+  const total = subtotal;
   
   if (cart.length === 0) {
     return (
@@ -51,9 +51,9 @@ const CartPage = () => {
               const qty = quantities[item.id] || 1;
               return (
                 <div key={`${item.id}-${item.shopId}`} className="cart-item">
-                  <div className="item-image">
+                  {/* <div className="item-image">
                     <img src={item.image || 'https://via.placeholder.com/100'} alt={item.name} />
-                  </div>
+                  </div> */}
                   <div className="item-details">
                     <h3>{item.name}</h3>
                     <p className="item-shop">{item.shopName}</p>
@@ -96,10 +96,7 @@ const CartPage = () => {
                 <span>Subtotal</span>
                 <span>MMK {subtotal.toFixed(2)}</span>
               </div>
-              <div className="price-row">
-                <span>Delivery Fee</span>
-                <span>MMK {deliveryFee.toFixed(2)}</span>
-              </div>
+              
               <div className="summary-divider"></div>
               <div className="summary-row total">
                 <span>Total</span>

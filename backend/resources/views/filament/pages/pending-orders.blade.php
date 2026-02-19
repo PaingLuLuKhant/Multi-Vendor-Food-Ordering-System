@@ -91,7 +91,7 @@
     @endif
 
     <!-- Modal -->
-    <div id="assignModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+    <div id="assignModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
         background: rgba(0,0,0,0.4); align-items:center; justify-content:center;">
         <div style="background-color: #232222ef; padding:20px; border-radius:8px; width:300px; text-align:center;">
             <h3>Select Delivery Person</h3>

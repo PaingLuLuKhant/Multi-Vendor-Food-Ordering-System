@@ -52,14 +52,10 @@ const ShopPage = () => {
   };
 
   // Format time like 930 -> 09:30
-  // Correct formatTime function
-  // Robust formatTime function
   const formatTime = (time) => {
     if (!time) return "";
     return time; // API already sends "HH:MM" correctly
   };
-
-
 
   const isOpen = shop?.is_open_now;
 
@@ -134,7 +130,9 @@ const ShopPage = () => {
     } catch (error) {
       console.error(error);
       alert("Failed to submit rating. Please try again.");
-    } finally { setIsSubmittingRating(false); }
+    } finally { 
+      setIsSubmittingRating(false); 
+    }
   };
 
   const handleEditRating = (rating) => {
@@ -163,7 +161,9 @@ const ShopPage = () => {
     } catch (error) {
       console.error(error);
       alert("Failed to delete rating. Please try again.");
-    } finally { setDeletingRatingId(null); }
+    } finally { 
+      setDeletingRatingId(null); 
+    }
   };
 
   const renderStars = (rating, interactive = false, onRate = null) => {
@@ -226,7 +226,24 @@ const ShopPage = () => {
     else navigate("/checkout");
   };
 
-  const handleBackToShops = () => navigate("/");
+  // FIXED: Back button handler that preserves BOTH category AND search term
+  const handleBackToShops = () => {
+    // Get saved filters from sessionStorage
+    const lastCategory = sessionStorage.getItem('lastCategory') || 'all';
+    const lastSearch = sessionStorage.getItem('lastSearch') || '';
+    
+    console.log("Going back with category:", lastCategory, "search:", lastSearch);
+    
+    // Pass both category and search term back to the home page
+    navigate('/', { 
+      state: { 
+        selectedCategory: lastCategory,
+        searchTerm: lastSearch,
+        preserveFilter: true,
+        fromShop: true
+      } 
+    });
+  };
 
   const filteredProducts = activeTab === "all"
     ? shop.products
@@ -268,30 +285,34 @@ const ShopPage = () => {
                   <span className="rating-count">({ratingCount} {ratingCount === 1 ? 'review' : 'reviews'})</span>
                 </div>
               </div>
-              <button className="rate-shop-btn" onClick={() => { setEditingRatingId(null); setRatingComment(""); setUserRating(0); setShowRatingForm(!showRatingForm); }}>
+              <button className="rate-shop-btn" onClick={() => { 
+                setEditingRatingId(null); 
+                setRatingComment(""); 
+                setUserRating(0); 
+                setShowRatingForm(!showRatingForm); 
+              }}>
                 {userRating > 0 ? 'Update Rating' : 'Rate this Shop'}
               </button>
             </div>
 
-            {/* Shop Hours */}
-            <div className="meta-item">
-              <span className="meta-icon">⏰</span>
-              <span>
-  {shop.open_time && shop.close_time
-    ? `${formatTime(shop.open_time)} - ${formatTime(shop.close_time)}`
-    : "Hours not set"}
-  {shop.is_closed_today ? " (Closed today)" : ""}
-</span>
+            {/* Shop Hours & Status - with proper spacing */}
+            <div className="shop-meta-container">
+              <div className="meta-item">
+                <span className="meta-icon">⏰</span>
+                <span>
+                  {shop.open_time && shop.close_time
+                    ? `${formatTime(shop.open_time)} - ${formatTime(shop.close_time)}`
+                    : "Hours not set"}
+                  {shop.is_closed_today ? " (Closed today)" : ""}
+                </span>
+              </div>
 
-
-            </div>
-
-            {/* Open/Closed */}
-            <div className="meta-item">
-              <span className="meta-icon">{isOpen ? "🟢" : "🔴"}</span>
-              <span style={{ fontWeight: "bold", color: isOpen ? "#16a34a" : "#dc2626" }}>
-                {isOpen ? "OPEN" : "CLOSED"}
-              </span>
+              <div className="meta-item">
+                <span className="meta-icon">{isOpen ? "🟢" : "🔴"}</span>
+                <span style={{ fontWeight: "bold", color: isOpen ? "#16a34a" : "#dc2626" }}>
+                  {isOpen ? "OPEN" : "CLOSED"}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -306,7 +327,12 @@ const ShopPage = () => {
             <div className="products-header">
               <h2>Menu Items</h2>
               <div className="category-tabs">
-                <button className={`category-tab ${activeTab === "all" ? "active" : ""}`} onClick={() => setActiveTab("all")}>All Items</button>
+                <button 
+                  className={`category-tab ${activeTab === "all" ? "active" : ""}`} 
+                  onClick={() => setActiveTab("all")}
+                >
+                  All Items
+                </button>
               </div>
             </div>
 
@@ -326,12 +352,27 @@ const ShopPage = () => {
                     <div className="product-actions">
                       {quantityInCart > 0 ? (
                         <div className="quantity-controls">
-                          <button onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)} className="quantity-btn minus">-</button>
+                          <button 
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)} 
+                            className="quantity-btn minus"
+                          >
+                            -
+                          </button>
                           <span className="quantity-display">{quantityInCart}</span>
-                          <button onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)} className="quantity-btn plus">+</button>
+                          <button 
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)} 
+                            className="quantity-btn plus"
+                          >
+                            +
+                          </button>
                         </div>
                       ) : (
-                        <button className="add-to-cart-btn" onClick={() => handleAddToCart(product)}>Add to Cart</button>
+                        <button 
+                          className="add-to-cart-btn" 
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          Add to Cart
+                        </button>
                       )}
                     </div>
                   </div>
@@ -348,7 +389,11 @@ const ShopPage = () => {
                   <h2>Your Order from {shop.name}</h2>
                   <div className="items-count">{shopCartCount} items</div>
                 </div>
-                {shopCartCount > 0 && <button className="clear-all-btn" onClick={() => clearShopCart(shop.id)}>Clear All</button>}
+                {shopCartCount > 0 && (
+                  <button className="clear-all-btn" onClick={() => clearShopCart(shop.id)}>
+                    Clear All
+                  </button>
+                )}
               </div>
 
               {shopCartCount > 0 ? (
@@ -362,13 +407,30 @@ const ShopPage = () => {
                         </div>
                         <div className="item-controls">
                           <div className="quantity-selector">
-                            <button onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)} className="qty-btn">-</button>
+                            <button 
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)} 
+                              className="qty-btn"
+                            >
+                              -
+                            </button>
                             <span className="qty-display">{globalQuantities[item.id] || 0}</span>
-                            <button onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)} className="qty-btn">+</button>
+                            <button 
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)} 
+                              className="qty-btn"
+                            >
+                              +
+                            </button>
                           </div>
                           <div className="item-price-section">
-                            <span className="item-price">MMK {((item.price || 0) * (globalQuantities[item.id] || 0)).toFixed(2)}</span>
-                            <button onClick={() => handleRemoveFromCart(item.id)} className="remove-btn">Remove</button>
+                            <span className="item-price">
+                              MMK {((item.price || 0) * (globalQuantities[item.id] || 0)).toFixed(2)}
+                            </span>
+                            <button 
+                              onClick={() => handleRemoveFromCart(item.id)} 
+                              className="remove-btn"
+                            >
+                              Remove
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -386,7 +448,9 @@ const ShopPage = () => {
                     </div>
                   </div>
 
-                  <button className="checkout-btn" onClick={handleCheckout}>Proceed to Checkout</button>
+                  <button className="checkout-btn" onClick={handleCheckout}>
+                    Proceed to Checkout
+                  </button>
                 </>
               ) : (
                 <div className="empty-order">
@@ -398,7 +462,9 @@ const ShopPage = () => {
 
               {shopCartCount > 0 && (
                 <div className="shop-actions">
-                  <button className="continue-shopping-btn" onClick={() => navigate("/")}>Continue Shopping</button>
+                  <button className="continue-shopping-btn" onClick={() => navigate("/")}>
+                    Continue Shopping
+                  </button>
                 </div>
               )}
             </div>
@@ -425,8 +491,18 @@ const ShopPage = () => {
                       {renderStars(review.rating)}
                       {review.is_own && (
                         <div className="review-actions">
-                          <button className="edit-review-btn" onClick={() => handleEditRating(review)} disabled={deletingRatingId === review.id}>Edit</button>
-                          <button className="delete-review-btn" onClick={() => handleDeleteRating(review.id)} disabled={deletingRatingId === review.id}>
+                          <button 
+                            className="edit-review-btn" 
+                            onClick={() => handleEditRating(review)} 
+                            disabled={deletingRatingId === review.id}
+                          >
+                            Edit
+                          </button>
+                          <button 
+                            className="delete-review-btn" 
+                            onClick={() => handleDeleteRating(review.id)} 
+                            disabled={deletingRatingId === review.id}
+                          >
                             {deletingRatingId === review.id ? 'Deleting...' : 'Delete'}
                           </button>
                         </div>
@@ -447,29 +523,62 @@ const ShopPage = () => {
         </div>
       </div>
 
-      {/* ===== RATING MODAL ===== */}
+      {/* ===== BEAUTIFUL RATING MODAL ===== */}
       {showRatingForm && (
-        <div className="rating-modal-overlay">
-          <div className="rating-modal">
+        <div className="rating-modal-overlay" onClick={() => setShowRatingForm(false)}>
+          <div className="rating-modal" onClick={e => e.stopPropagation()}>
             <div className="rating-modal-header">
-              <h3>{editingRatingId ? 'Edit Your Rating' : 'Rate this Shop'}</h3>
+              <h3>{editingRatingId ? 'Edit Your Review' : 'Rate This Shop'}</h3>
               <button className="close-modal-btn" onClick={() => setShowRatingForm(false)}>×</button>
             </div>
 
             <div className="rating-modal-body">
-              <label>Select Rating:</label>
-              {renderStars(userRating, true, setUserRating)}
+              <div className="rating-section">
+                <span className="rating-label">YOUR RATING</span>
+                <div className="rating-stars-input">
+                  {renderStars(userRating, true, setUserRating)}
+                </div>
+                {userRating > 0 && (
+                  <div className="selected-rating">
+                    <span>You selected {userRating} {userRating === 1 ? 'star' : 'stars'}</span>
+                  </div>
+                )}
+              </div>
 
-              <label>Comment (optional):</label>
-              <textarea
-                value={ratingComment}
-                onChange={(e) => setRatingComment(e.target.value)}
-                placeholder="Write your comment..."
-              />
+              <div className="comment-section">
+                <label>YOUR COMMENT</label>
+                <textarea
+                  value={ratingComment}
+                  onChange={(e) => {
+                    if (e.target.value.length <= 500) {
+                      setRatingComment(e.target.value);
+                    }
+                  }}
+                  placeholder="Share your experience... (optional)"
+                  maxLength={500}
+                />
+              </div>
 
-              <button className="submit-rating-btn" onClick={handleSubmitRating} disabled={isSubmittingRating}>
-                {isSubmittingRating ? "Submitting..." : editingRatingId ? "Update Rating" : "Submit Rating"}
-              </button>
+              <div className="rating-modal-footer">
+                <button 
+                  className="cancel-btn" 
+                  onClick={() => setShowRatingForm(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className={`submit-rating-btn ${isSubmittingRating ? 'loading' : ''}`}
+                  onClick={handleSubmitRating} 
+                  disabled={isSubmittingRating || userRating === 0}
+                >
+                  {isSubmittingRating 
+                    ? 'Submitting...' 
+                    : editingRatingId 
+                      ? 'Update Review' 
+                      : 'Submit Review'
+                  }
+                </button>
+              </div>
             </div>
           </div>
         </div>

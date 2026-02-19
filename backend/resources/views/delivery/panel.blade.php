@@ -13,7 +13,11 @@
         }
 
         .header {
+<<<<<<< HEAD
             background: #385697;
+=======
+            background: #6b1511;
+>>>>>>> ksh
             color: white;
             padding: 16px 24px;
             font-size: 20px;
@@ -59,7 +63,7 @@
         }
 
         .pending { background: #f59e0b; }
-        .assigned { background: #3b82f6; }
+        .assigned { background: #33c9f7; }
         .completed { background: #16a34a; }
 
         .actions {
@@ -69,7 +73,7 @@
         button {
             width: 100%;
             padding: 10px;
-            background: #16a34a;
+            background: #6b1511;
             color: white;
             border: none;
             border-radius: 6px;

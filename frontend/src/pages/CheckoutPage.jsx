@@ -33,9 +33,8 @@ const CheckoutPage = () => {
     }
   }, [user]);
 
-  const deliveryFee = 2.99;
   const subtotal = parseFloat(getCartTotal());
-  const total = subtotal + deliveryFee;
+  const total = subtotal; // No delivery fee
 
   // Handle input changes
   const handleInputChange = (e) => {
@@ -61,48 +60,59 @@ const CheckoutPage = () => {
     }
   };
 
-  // Validate Myanmar phone number
+  // Validate Myanmar phone number - accepts 09 or 9 format
   const validateMyanmarPhone = (phone) => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    
-    if (!cleanPhone.trim()) {
-      return 'Phone number is required';
-    }
-    
-    if (!cleanPhone.startsWith('09')) {
-      return 'Phone number must start with 09';
-    }
-    
-    const length = cleanPhone.length;
-    if (length < 9) {
-      return `Phone number too short (${length} digits). Need 9-11 digits`;
-    }
-    
-    if (length > 11) {
-      return `Phone number too long (${length} digits). Maximum 11 digits`;
-    }
-    
-    if (!/^09\d+$/.test(cleanPhone)) {
-      return 'Invalid phone number format';
-    }
-    
-    return '';
-  };
+  const cleanPhone = phone.replace(/\D/g, '');
+
+  if (!cleanPhone) {
+    return 'Phone number is required';
+  }
+
+  // Must start with 09 or 9
+  if (!cleanPhone.startsWith('09') && !cleanPhone.startsWith('9')) {
+    return 'Phone number must start with 09 or 9';
+  }
+
+  // Count digits AFTER prefix
+  let digitsAfterPrefix;
+
+  if (cleanPhone.startsWith('09')) {
+    digitsAfterPrefix = cleanPhone.slice(2);
+  } else {
+    digitsAfterPrefix = cleanPhone.slice(1);
+  }
+
+  if (digitsAfterPrefix.length < 7) {
+    return 'Phone number must have at least 7 digits after 09 or 9';
+  }
+
+  return '';
+};
+
 
   // Format phone for display
   const formatPhoneForDisplay = (phone) => {
     const cleanPhone = phone.replace(/\D/g, '');
     if (cleanPhone.length === 0) return '';
     
-    if (cleanPhone.length === 11) {
-      return cleanPhone.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
-    } else if (cleanPhone.length === 10) {
-      return cleanPhone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
-    } else if (cleanPhone.length === 9) {
-      return cleanPhone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    // Normalize for formatting
+    const normalizedPhone = cleanPhone.startsWith('9') ? '0' + cleanPhone : cleanPhone;
+    
+    if (normalizedPhone.length === 11) {
+      return normalizedPhone.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
+    } else if (normalizedPhone.length === 10) {
+      return normalizedPhone.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+    } else if (normalizedPhone.length === 12) {
+      return normalizedPhone.replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3');
     }
     
     return cleanPhone;
+  };
+
+  // Normalize phone for API (always store with 09 format)
+  const normalizePhoneForAPI = (phone) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.startsWith('9') ? '0' + cleanPhone : cleanPhone;
   };
 
   // Validate form
@@ -145,8 +155,8 @@ const CheckoutPage = () => {
     setLoading(true);
 
     try {
-      // Clean phone number (digits only)
-      const cleanPhone = formData.phone.replace(/\D/g, '');
+      // Clean and normalize phone number (always store with 09 format)
+      const cleanPhone = normalizePhoneForAPI(formData.phone);
 
       // Prepare API payload
       const orderItems = cart.map(item => ({
@@ -189,7 +199,7 @@ const CheckoutPage = () => {
         name: formData.name,
         email: formData.email,
         address: formData.address,
-        phone: cleanPhone,
+        phone: cleanPhone, // Store normalized phone
         paymentMethod: formData.paymentMethod,
         
         // From cart
@@ -203,8 +213,6 @@ const CheckoutPage = () => {
         
         // Calculated totals
         subtotal: subtotal.toFixed(2),
-        deliveryFee: deliveryFee.toFixed(2),
-        serviceFee: '1.49',
         total: total.toFixed(2),
         
         // From API response
@@ -301,7 +309,6 @@ const CheckoutPage = () => {
                   value={formData.phone}
                   onChange={handleInputChange}
                   required
-                  placeholder="09XXXXXXXXX"
                   className={errors.phone ? 'error' : ''}
                 />
               </div>
@@ -309,7 +316,9 @@ const CheckoutPage = () => {
               {errors.phone ? (
                 <div className="error-message">{errors.phone}</div>
               ) : (
-                <small className="phone-hint">Format: 09XXXXXXXXX (9-11 digits)</small>
+                <small className="phone-hint">
+                  {/* Format: 09XXXXXXXXX or 9XXXXXXXXX (8-10 digits after 09/9) */}
+                </small>
               )}
             </div>
 
@@ -384,10 +393,6 @@ const CheckoutPage = () => {
               <div className="price-row">
                 <span>Subtotal</span>
                 <span>MMK {subtotal.toFixed(2)}</span>
-              </div>
-              <div className="price-row">
-                <span>Delivery Fee</span>
-                <span>MMK {deliveryFee.toFixed(2)}</span>
               </div>
               
               <div className="price-row total">

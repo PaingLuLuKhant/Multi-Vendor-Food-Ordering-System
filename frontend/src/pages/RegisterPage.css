@@ -861,3 +861,18 @@
     background: #aaaaaa;
   }
 }
+
+.password-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+}
+
+.eye-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}

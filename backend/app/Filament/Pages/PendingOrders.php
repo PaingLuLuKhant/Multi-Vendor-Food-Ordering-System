@@ -114,7 +114,7 @@
 //             Tables\Columns\TextColumn::make('status')
 //                 ->label('Status')
 //                 ->badge()
-//                 ->getStateUsing(fn($record) => 
+//                 ->getStateUsing(fn($record) =>
 //                     collect($record->orderItems)
 //                         ->filter(fn($item) =>
 //                             in_array($item->product->shop_id, $shopIds->toArray()) &&
@@ -125,7 +125,7 @@
 //                         ->map(fn($s) => $s === 'assigned' ? 'Delivery Assigned' : ucfirst($s))
 //                         ->join(', ')
 //                 )
-//                 ->color(fn($record) => 
+//                 ->color(fn($record) =>
 //                     collect($record->orderItems)
 //                         ->filter(fn($item) =>
 //                             in_array($item->product->shop_id, $shopIds->toArray()) &&

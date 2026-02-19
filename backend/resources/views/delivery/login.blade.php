@@ -37,7 +37,7 @@
         .login-box button {
             width: 100%;
             padding: 10px;
-            background: #2563eb;
+            background: #6b1511;
             color: white;
             border: none;
             border-radius: 5px;
@@ -46,7 +46,7 @@
         }
 
         .login-box button:hover {
-            background: #1e4ed8;
+            background: #6b1511;
         }
 
         .error {
@@ -70,17 +70,17 @@
     <form method="POST" action="/deli-login">
         @csrf
 
-        <input 
-            type="text" 
-            name="phone" 
-            placeholder="Phone Number" 
+        <input
+            type="text"
+            name="phone"
+            placeholder="Phone Number"
             required
         >
 
-        <input 
-            type="password" 
-            name="password" 
-            placeholder="Password" 
+        <input
+            type="password"
+            name="password"
+            placeholder="Password"
             required
         >
 
