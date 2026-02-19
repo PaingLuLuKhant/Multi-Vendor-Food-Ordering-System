@@ -103,36 +103,47 @@
         </div>
     @else
         <div class="cards">
-            @foreach($orderItems as $item)
-                <div class="card">
-                    <h3>Order #{{ $item->order->id }}</h3>
+            @foreach($orderItems->groupBy(fn($item) => $item->order->id) as $orderId => $items)
+    <div class="card">
+        <h3>Order #{{ $orderId }}</h3>
+        <p><strong>Customer:</strong> {{ $items->first()->order->user->name }}</p>
 
-                    <p><strong>Customer:</strong> {{ $item->order->user->name }}</p>
-                    <p><strong>Product:</strong> {{ $item->product->name }}</p>
-                    <p><strong>Quantity:</strong> {{ $item->quantity }}</p>
+        <p>
+            <strong>Products:</strong>
+            {{ $items->map(fn($item) => $item->product->name . ' (x' . $item->quantity . ')')->join(', ') }}
+        </p>
 
-                    <p>
-                        <strong>Status:</strong>
-                        <span class="badge {{ $item->delivery_status }}">
-                            {{ ucfirst($item->delivery_status) }}
-                        </span>
-                    </p>
-
-                    @if($item->delivery_status === 'assigned')
-                        <div class="actions">
-                            <form method="POST" action="{{ url('/deli/'.$item->id.'/delivered') }}">
-                                @csrf
-                                <button type="submit">
-                                    Mark Completed
-                                </button>
-                            </form>
-                        </div>
-                    @endif
-                </div>
+        <p>
+            <strong>Status:</strong>
+            @php
+                $statuses = $items->pluck('delivery_status')->unique();
+            @endphp
+            @foreach($statuses as $status)
+                <span class="badge {{ $status }}">
+                    {{ ucfirst($status) }}
+                </span>
             @endforeach
+        </p>
+
+        {{-- Only show button if any item is assigned --}}
+        @if($items->contains(fn($i) => $i->delivery_status === 'assigned'))
+            <div class="actions">
+                <form method="POST" action="{{ url('/deli/'.$orderId.'/delivered') }}">
+                    @csrf
+                    <button type="submit">
+                        Mark Completed
+                    </button>
+                </form>
+            </div>
+        @endif
+    </div>
+@endforeach
         </div>
     @endif
 </div>
+
+
+
 
 </body>
 </html>
