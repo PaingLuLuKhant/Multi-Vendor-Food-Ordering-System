@@ -99,7 +99,7 @@
 <body>
 
 <div class="login-box">
-    <h2>Delivery Login</h2>
+    <!-- <h2>Login</h2> -->
 
     @if(session('error'))
         <div class="error">

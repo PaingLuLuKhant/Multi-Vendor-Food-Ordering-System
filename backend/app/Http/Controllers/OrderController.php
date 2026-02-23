@@ -60,7 +60,10 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.price' => 'required|numeric|min:0',
             'total_amount' => 'required|numeric|min:0',
+            'customer_phone' => 'required|string|max:20',
+            'customer_address' => 'required|string',
         ]);
+        \Log::info('Order request data:', $request->all());
 
         DB::beginTransaction();
 
@@ -70,6 +73,8 @@ class OrderController extends Controller
                 'user_id' => $user->id,
                 'total_amount' => $request->total_amount,
                 'status' => 'pending',
+                'customer_phone' => $request->customer_phone,
+                'customer_address' => $request->customer_address,
             ]);
 
             // 2️⃣ Create order items

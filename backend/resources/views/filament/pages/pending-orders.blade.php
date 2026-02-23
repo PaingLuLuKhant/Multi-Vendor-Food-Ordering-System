@@ -69,7 +69,7 @@
                                         Pending
                                     </x-filament::badge>
                                 @elseif($isAssigned)
-                                    <x-filament::badge color="warning">
+                                    <x-filament::badge color="info">
                                         Delivery Assigned
                                     </x-filament::badge>
                                 @endif
@@ -284,10 +284,17 @@
 
         function assignDelivery() {
             let deliveryId = document.getElementById('deliverySelect').value;
-            if (!deliveryId || !currentOrderId) return;
-            Livewire.emit('assignDelivery', currentOrderId, deliveryId);
+            if (!deliveryId || !currentOrderId) {
+                alert('Please select delivery');
+                return;
+            }
+
+            // Call PHP method directly from Filament Livewire page
+            @this.call('assignDelivery', currentOrderId, deliveryId);
+
             closeAssignModal();
         }
+
     </script>
 
 </x-filament::page>

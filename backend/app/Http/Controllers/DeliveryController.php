@@ -74,39 +74,76 @@ class DeliveryController extends Controller
 //     return back()->with('success', 'Order updated!');
 // }
 
+// public function markDelivered($orderId)
+// {
+//     // Load the order with items
+//     $order = Order::with('orderItems.product')->find($orderId);
+
+//     if (!$order) {
+//         return back()->with('error', 'Order not found');
+//     }
+
+//     // Filter items belonging to this shop and not already completed
+//     $shopIds = Shop::where('user_id', auth()->id())->pluck('id');
+
+//     $itemsToUpdate = $order->orderItems
+//         ->filter(fn($item) =>
+//             in_array($item->product->shop_id, $shopIds->toArray()) &&
+//             $item->delivery_status !== 'completed'
+//         );
+
+//     // Update all items to completed
+//     foreach ($itemsToUpdate as $item) {
+//         $item->delivery_status = 'completed';
+//         $item->save();
+//     }
+
+//     // If all items of the order are completed, update order status
+//     $allCompleted = $order->orderItems()->where('delivery_status', '!=', 'completed')->doesntExist();
+//     if ($allCompleted) {
+//         $order->status = 'completed';
+//         $order->save();
+//     }
+
+//     return back()->with('success', 'Order updated!');
+// }
+
+
 public function markDelivered($orderId)
 {
-    // Load the order with items
-    $order = Order::with('orderItems.product')->find($orderId);
+    // Get delivery rider ID from session
+    $deliId = session('deli_id');
 
-    if (!$order) {
-        return back()->with('error', 'Order not found');
+    if (!$deliId) {
+        return back()->with('error', 'Not logged in as delivery person.');
     }
 
-    // Filter items belonging to this shop and not already completed
-    $shopIds = Shop::where('user_id', auth()->id())->pluck('id');
+    // Load the order with items assigned to this delivery rider
+    $order = Order::with(['orderItems' => function($q) use ($deliId) {
+        $q->where('delivery_id', $deliId)
+          ->where('delivery_status', 'assigned');
+    }])->find($orderId);
 
-    $itemsToUpdate = $order->orderItems
-        ->filter(fn($item) =>
-            in_array($item->product->shop_id, $shopIds->toArray()) &&
-            $item->delivery_status !== 'completed'
-        );
+    if (!$order || $order->orderItems->isEmpty()) {
+        return back()->with('error', 'No assigned items to mark as completed.');
+    }
 
-    // Update all items to completed
-    foreach ($itemsToUpdate as $item) {
+    // Update all assigned items to completed
+    foreach ($order->orderItems as $item) {
         $item->delivery_status = 'completed';
         $item->save();
     }
 
-    // If all items of the order are completed, update order status
+    // If all items of the order are completed (for all shops), update order status
     $allCompleted = $order->orderItems()->where('delivery_status', '!=', 'completed')->doesntExist();
     if ($allCompleted) {
         $order->status = 'completed';
         $order->save();
     }
 
-    return back()->with('success', 'Order updated!');
+    return back()->with('success', 'Order marked as completed!');
 }
+
 
 
 

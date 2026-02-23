@@ -354,7 +354,7 @@ const CustomerDashboard = () => {
     return (
       <div className="loading-shops">
         <div className="spinner"></div>
-        <p>Loading restaurants...</p>
+        <p>Loading Shops...</p>
       </div>
     );
   }
@@ -362,7 +362,7 @@ const CustomerDashboard = () => {
   if (error) {
     return (
       <div className="error-container">
-        <h2>Error Loading Restaurants</h2>
+        <h2>Error Loading Shops</h2>
         <p>{error}</p>
         <button 
           onClick={() => window.location.reload()} 
@@ -517,7 +517,7 @@ const CustomerDashboard = () => {
         {loadingFavorites && showFavoritesOnly ? (
           <div className="loading-favorites">
             <div className="spinner"></div>
-            <p>Loading your favorite restaurants...</p>
+            <p>Loading your favorite Shops...</p>
           </div>
         ) : filteredShops.length > 0 ? (
           <div className="shops-grid">
