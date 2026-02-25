@@ -173,9 +173,9 @@ const Header = () => {
                       </div>
                     </div>
                     
-                    <div className="dropdown-divider"></div>
+                    {/* <div className="dropdown-divider"></div> */}
                     
-                    <Link 
+                    {/* <Link 
                       to="./profile" 
                       className="dropdown-item"
                       onClick={(e) => {
@@ -229,9 +229,9 @@ const Header = () => {
                     >
                       <span className="icon">📦</span>
                       My Orders
-                    </Link>
+                    </Link> */}
                     
-                    <Link 
+                    {/* <Link 
                       to="/settings" 
                       className="dropdown-item"
                       onClick={(e) => {
@@ -242,7 +242,7 @@ const Header = () => {
                     >
                       <span className="icon">⚙️</span>
                       Settings
-                    </Link>
+                    </Link> */}
                     
                     <div className="dropdown-divider"></div>
                     

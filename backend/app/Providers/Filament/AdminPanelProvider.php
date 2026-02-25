@@ -10,8 +10,6 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -25,13 +23,26 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        $user = auth()->user();
+
+        $widgets = [];
+
+        if ($user) {
+            if ($user->isAdmin()) {
+                $widgets[] = \App\Filament\Widgets\AdminStatsOverview::class;
+            }
+
+            if ($user->isShopOwner()) {
+                $widgets[] = \App\Filament\Widgets\ShopOwnerStatsOverview::class;
+            }
+        }
+
         return $panel
             ->default()
             ->id('admin')
             ->path('admin')
             ->login()
-            // ->viteTheme('resources/css/filament.css')
-            ->registration(Register::class)  // registering custom form from app/filament/pages/auth/register.php
+            ->registration(Register::class)
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -42,12 +53,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->globalSearch(false)
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                \App\Filament\Widgets\AdminStatsOverview::class,
-                // AccountWidget::class,
-                // FilamentInfoWidget::class,  
-                
-            ])
+            ->widgets($widgets)
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

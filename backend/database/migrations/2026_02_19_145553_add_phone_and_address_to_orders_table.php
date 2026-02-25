@@ -10,20 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('orders', function (Blueprint $table) {
-            $table->string('customer_phone')->nullable()->after('status');
-            $table->text('customer_address')->nullable()->after('customer_phone');
-        });
-    }
+{
+    Schema::table('orders', function (Blueprint $table) {
+        $table->string('customer_phone')->nullable();
+        $table->text('customer_address')->nullable();
+    });
+}
+
+public function down(): void
+{
+    Schema::table('orders', function (Blueprint $table) {
+        $table->dropColumn(['customer_phone', 'customer_address']);
+    });
+}
 
     /**
      * Reverse the migrations.
      */
-    public function down(): void
-    {
-        Schema::table('orders', function (Blueprint $table) {
-             $table->dropColumn(['customer_phone', 'customer_address']);
-        });
-    }
+
 };

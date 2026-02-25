@@ -102,7 +102,7 @@ const LoginPage = () => {
         <div className="login-page">
             <div className="login-container">
                 {/* Left Side */}
-                <div className="login-left">
+                {/* <div className="login-left">
                     <div className="login-brand">
                         <div className="brand-logo">🛒</div>
                         <h1>POS Marketplace</h1>
@@ -134,7 +134,7 @@ const LoginPage = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Right Side */}
                 <div className="login-right">
