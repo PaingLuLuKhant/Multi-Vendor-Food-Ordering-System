@@ -22,51 +22,175 @@ const RegisterPage = () => {
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
+    const [passwordStrength, setPasswordStrength] = useState({
+        score: 0,
+        hasMinLength: false,
+        hasUpperCase: false,
+        hasLowerCase: false,
+        hasNumber: false,
+        hasSpecialChar: false,
+        message: ''
+    });
+
+    // Add email validation function
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    // Strong password validation function
+    const checkPasswordStrength = (password) => {
+        const strength = {
+            score: 0,
+            hasMinLength: password.length >= 8,
+            hasUpperCase: /[A-Z]/.test(password),
+            hasLowerCase: /[a-z]/.test(password),
+            hasNumber: /[0-9]/.test(password),
+            hasSpecialChar: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+            message: ''
+        };
+
+        // Calculate score
+        if (strength.hasMinLength) strength.score++;
+        if (strength.hasUpperCase) strength.score++;
+        if (strength.hasLowerCase) strength.score++;
+        if (strength.hasNumber) strength.score++;
+        if (strength.hasSpecialChar) strength.score++;
+
+        // Set message based on score
+        if (password.length === 0) {
+            strength.message = '';
+        } else if (strength.score < 3) {
+            strength.message = 'Weak password';
+        } else if (strength.score < 4) {
+            strength.message = 'Medium password';
+        } else if (strength.score < 5) {
+            strength.message = 'Strong password';
+        } else {
+            strength.message = 'Very strong password';
+        }
+
+        return strength;
+    };
 
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
+        
+        // Update form data
         setFormData(prev => ({
             ...prev,
             [name]: type === 'checkbox' ? checked : value
         }));
+        
+        // Check password strength when password field changes
+        if (name === 'password') {
+            setPasswordStrength(checkPasswordStrength(value));
+        }
+        
+        // Clear error for this field when user starts typing
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: null }));
+        }
     };
 
     const validate = () => {
         const newErrors = {};
-        if (!formData.name) newErrors.name = 'Full Name is required';
-        if (!formData.email.trim()) {
+        
+        // Name validation
+        if (!formData.name?.trim()) {
+            newErrors.name = 'Full Name is required';
+        }
+        
+        // Email validation
+        if (!formData.email?.trim()) {
             newErrors.email = 'Email is required';
-        // eslint-disable-next-line no-undef
         } else if (!isValidEmail(formData.email)) {
             newErrors.email = 'Please enter a valid email address';
         }
-        if (!formData.password) newErrors.password = 'Password is required';
-        if (formData.password !== formData.confirmPassword)
+        
+        // Enhanced password validation
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+        } else {
+            const strength = checkPasswordStrength(formData.password);
+            if (!strength.hasMinLength) {
+                newErrors.password = 'Password must be at least 8 characters long';
+            } else if (!strength.hasUpperCase) {
+                newErrors.password = 'Password must contain at least one uppercase letter';
+            } else if (!strength.hasLowerCase) {
+                newErrors.password = 'Password must contain at least one lowercase letter';
+            } else if (!strength.hasNumber) {
+                newErrors.password = 'Password must contain at least one number';
+            } else if (!strength.hasSpecialChar) {
+                newErrors.password = 'Password must contain at least one special character (!@#$%^&* etc.)';
+            }
+        }
+        
+        // Confirm password validation
+        if (formData.password !== formData.confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
-        if (!formData.acceptTerms)
+        }
+        
+        // Terms validation
+        if (!formData.acceptTerms) {
             newErrors.acceptTerms = 'You must accept the terms';
+        }
+        
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validate()) return;
+        
+        if (!validate()) {
+            // Scroll to first error
+            const firstError = document.querySelector('.error-message');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
 
         setIsLoading(true);
         try {
-            const result = await register({ ...formData });
-            if (result.success) {
-                alert('Registration successful! Please login.');
-                navigate('/login');
+            // Prepare data for API - remove confirmPassword as it's not needed for backend
+            const { confirmPassword, acceptTerms, ...registrationData } = formData;
+            
+            console.log('Submitting registration data:', registrationData); // Debug log
+            
+            const result = await register(registrationData);
+            
+            if (result?.success) {
+                alert('Registration successful!');
+                navigate('/login', { state: { message: 'Registration successful! Please login.' } });
             } else {
-                setErrors({ general: result.error || 'Registration failed' });
+                setErrors({ 
+                    general: result?.error || 'Registration failed. Please try again.' 
+                });
             }
         } catch (err) {
-            setErrors({ general: 'Registration failed' });
+            console.error('Registration error:', err);
+            setErrors({ 
+                general: err.response?.data?.message || 'Registration failed. Please check your connection and try again.' 
+            });
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Get password strength color
+    const getStrengthColor = () => {
+        if (formData.password.length === 0) return '#e0e0e0';
+        if (passwordStrength.score < 3) return '#ff4444';
+        if (passwordStrength.score < 4) return '#ffbb33';
+        if (passwordStrength.score < 5) return '#00C851';
+        return '#007E33';
+    };
+
+    // Get strength width percentage
+    const getStrengthWidth = () => {
+        return `${(passwordStrength.score / 5) * 100}%`;
     };
 
     return (
@@ -85,7 +209,7 @@ const RegisterPage = () => {
                         </div>
                     )}
 
-                    <form onSubmit={handleSubmit} className="register-form">
+                    <form onSubmit={handleSubmit} className="register-form" noValidate>
                         <div className="form-row">
                             <div className="form-group">
                                 <label htmlFor="name" className="form-label">Full Name *</label>
@@ -98,6 +222,7 @@ const RegisterPage = () => {
                                     className={`form-input ${errors.name ? 'error' : ''}`}
                                     placeholder="John Doe"
                                     disabled={isLoading}
+                                    autoComplete="name"
                                 />
                                 {errors.name && <span className="error-message">{errors.name}</span>}
                             </div>
@@ -115,58 +240,24 @@ const RegisterPage = () => {
                                     className={`form-input ${errors.email ? 'error' : ''}`}
                                     placeholder="you@example.com"
                                     disabled={isLoading}
+                                    autoComplete="email"
                                 />
                                 {errors.email && <span className="error-message">{errors.email}</span>}
                             </div>
                         </div>
 
-                        <div className="form-row">
-                            <div className="form-group">
-                                <label htmlFor="phone" className="form-label">Phone Number *</label>
-                                <input
-                                    type="tel"
-                                    id="phone"
-                                    name="phone"
-                                    value={formData.phone}
-                                    onChange={handleInputChange}
-                                    className={`form-input ${errors.phone ? 'error' : ''}`}
-                                    placeholder="+1 (555) 123-4567"
-                                    disabled={isLoading}
-                                />
-                                {errors.phone && <span className="error-message">{errors.phone}</span>}
-                            </div>
-                        </div>
-
-                        <div className="form-row address-row">
-                            <div className="form-group">
-                                <label htmlFor="address" className="form-label">Delivery Address *</label>
-                                <textarea
-                                    id="address"
-                                    name="address"
-                                    value={formData.address}
-                                    onChange={handleInputChange}
-                                    className={`form-input textarea-input ${errors.address ? 'error' : ''}`}
-                                    placeholder="Enter your complete delivery address"
-                                    rows="3"
-                                    disabled={isLoading}
-                                />
-                                {errors.address && <span className="error-message">{errors.address}</span>}
-                            </div>
-                        </div>
-
                         <div className="form-row role-row">
-                        <div className="form-group">
-                            <label className="form-label">Account Type</label>
-                            <input
-                            type="text"
-                            value="Customer Account"
-                            className="form-input"
-                            disabled
-                            />
-                            <input type="hidden" name="role" value="customer" />
+                            <div className="form-group">
+                                <label className="form-label">Account Type</label>
+                                <input
+                                    type="text"
+                                    value="Customer Account"
+                                    className="form-input"
+                                    disabled
+                                />
+                                <input type="hidden" name="role" value="customer" />
+                            </div>
                         </div>
-                        </div>
-
 
                         <div className="form-row password-row">
                             <div className="form-group">
@@ -179,23 +270,89 @@ const RegisterPage = () => {
                                         value={formData.password}
                                         onChange={handleInputChange}
                                         className={`form-input password-input ${errors.password ? 'error' : ''}`}
-                                        placeholder="At least 6 characters with letters and numbers"
+                                        placeholder="Create a strong password"
                                         disabled={isLoading}
+                                        autoComplete="new-password"
                                     />
                                     <button
-                                    type="button"
-                                    className="password-toggle"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    disabled={isLoading}
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        disabled={isLoading}
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
                                     >
-                                    <img
-                                        src={showPassword ? "/icons/eye_open.png" : "/icons/eye_closed.png"}
-                                        alt="toggle password"
-                                        className="eye-icon"
-                                    />
+                                        <img
+                                            src={showPassword ? "/icons/eye_open.png" : "/icons/eye_closed.png"}
+                                            alt={showPassword ? 'Hide password' : 'Show password'}
+                                            className="eye-icon"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = ''; // Fallback if image fails to load
+                                            }}
+                                        />
                                     </button>
-
                                 </div>
+                                
+                                {/* Password strength meter */}
+                                {formData.password.length > 0 && (
+                                    <div className="password-strength">
+                                        <div className="strength-meter">
+                                            <div 
+                                                className="strength-meter-fill" 
+                                                style={{ 
+                                                    width: getStrengthWidth(),
+                                                    backgroundColor: getStrengthColor()
+                                                }}
+                                            />
+                                        </div>
+                                        <span 
+                                            className="strength-text"
+                                            style={{ color: getStrengthColor() }}
+                                        >
+                                            {passwordStrength.message}
+                                        </span>
+                                    </div>
+                                )}
+                                
+                                {/* Password requirements checklist */}
+                                {formData.password.length > 0 && (
+                                    <div className="password-requirements">
+                                        <p className="requirements-title">Password must contain:</p>
+                                        <ul className="requirements-list">
+                                            <li className={passwordStrength.hasMinLength ? 'valid' : 'invalid'}>
+                                                <span className="requirement-icon">
+                                                    {passwordStrength.hasMinLength ? '✓' : '○'}
+                                                </span>
+                                                At least 8 characters
+                                            </li>
+                                            <li className={passwordStrength.hasUpperCase ? 'valid' : 'invalid'}>
+                                                <span className="requirement-icon">
+                                                    {passwordStrength.hasUpperCase ? '✓' : '○'}
+                                                </span>
+                                                One uppercase letter
+                                            </li>
+                                            <li className={passwordStrength.hasLowerCase ? 'valid' : 'invalid'}>
+                                                <span className="requirement-icon">
+                                                    {passwordStrength.hasLowerCase ? '✓' : '○'}
+                                                </span>
+                                                One lowercase letter
+                                            </li>
+                                            <li className={passwordStrength.hasNumber ? 'valid' : 'invalid'}>
+                                                <span className="requirement-icon">
+                                                    {passwordStrength.hasNumber ? '✓' : '○'}
+                                                </span>
+                                                One number
+                                            </li>
+                                            <li className={passwordStrength.hasSpecialChar ? 'valid' : 'invalid'}>
+                                                <span className="requirement-icon">
+                                                    {passwordStrength.hasSpecialChar ? '✓' : '○'}
+                                                </span>
+                                                One special character (!@#$%^&*)
+                                            </li>
+                                        </ul>
+                                    </div>
+                                )}
+                                
                                 {errors.password && <span className="error-message">{errors.password}</span>}
                             </div>
 
@@ -207,9 +364,10 @@ const RegisterPage = () => {
                                     name="confirmPassword"
                                     value={formData.confirmPassword}
                                     onChange={handleInputChange}
-                                    className={`form-input password-input ${errors.confirmPassword ? 'error' : ''}`}
+                                    className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
                                     placeholder="Confirm your password"
                                     disabled={isLoading}
+                                    autoComplete="new-password"
                                 />
                                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
                             </div>
@@ -226,13 +384,17 @@ const RegisterPage = () => {
                                     className={errors.acceptTerms ? 'error' : ''}
                                 />
                                 <span className="checkbox-text">
-                                    I agree to the <Link to="/terms" className="terms-link">Terms</Link> and <Link to="/privacy" className="terms-link">Privacy</Link> *
+                                    I agree to the <Link to="/terms" className="terms-link" target="_blank">Terms</Link> and <Link to="/privacy" className="terms-link" target="_blank">Privacy</Link> *
                                 </span>
                             </label>
                             {errors.acceptTerms && <span className="error-message">{errors.acceptTerms}</span>}
                         </div>
 
-                        <button type="submit" className="register-btn" disabled={isLoading}>
+                        <button 
+                            type="submit" 
+                            className="register-btn" 
+                            disabled={isLoading}
+                        >
                             {isLoading ? 'Creating Account...' : 'Create Account'}
                         </button>
 
@@ -241,16 +403,16 @@ const RegisterPage = () => {
                         </div>
                     </form>
 
-                    <div className="register-footer">
+                    {/* <div className="register-footer">
                         <p>By creating an account, you agree to our</p>
                         <div className="footer-links">
-                            <Link to="/terms" className="footer-link">Terms</Link>
+                            <Link to="/terms" className="footer-link" target="_blank">Terms</Link>
                             <span className="separator">•</span>
-                            <Link to="/privacy" className="footer-link">Privacy</Link>
+                            <Link to="/privacy" className="footer-link" target="_blank">Privacy</Link>
                             <span className="separator">•</span>
-                            <Link to="/cookies" className="footer-link">Cookies</Link>
+                            <Link to="/cookies" className="footer-link" target="_blank">Cookies</Link>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>
