@@ -38,9 +38,9 @@ export const AuthProvider = ({ children }) => {
     // ✅ REGISTER
     const register = async (userData) => {
         try {
-            const response = await fetch('http://localhost:8000/api/register', {
+            const response = await fetch('http://127.0.0.1:8000/api/register', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' ,"Accept": "application/json", },
                 body: JSON.stringify({
                     name: userData.name,
                     email: userData.email,
@@ -52,6 +52,7 @@ export const AuthProvider = ({ children }) => {
             const data = await response.json();
 
             if (!response.ok) {
+                console.log("Laravel validation errors:", data.errors); // 👈 log errors
                 return { success: false, error: data.message || 'Registration failed' };
             }
 

@@ -49,10 +49,10 @@ class AdminStatsOverview extends StatsOverviewWidget
                 ->icon('heroicon-o-user')
                 ->color('info'),
 
-            Stat::make('Total Shops', Shop::count())
-                ->description('Active shops on platform')
-                ->icon('heroicon-o-building-storefront')
-                ->color('info'),
+            Stat::make('Total Shops', \App\Models\Shop::where('status', 'approved')->count())
+    ->description('Active shops on platform')
+    ->icon('heroicon-o-building-storefront')
+    ->color('info'),
 
             Stat::make('Total Products', Product::count())
                 ->description('Products listed by shops')

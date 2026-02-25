@@ -118,13 +118,14 @@ class ShopOrdersTable
                 TextColumn::make('row_number')
                     ->rowIndex()
                     ->label('#'),
-                    TextColumn::make('id')
+
+                TextColumn::make('id')
                     ->label('Order ID')
-                    ->sortable(),
+                    ,
 
                 TextColumn::make('user.name')
                     ->label('Customer Name')
-                    ->sortable()
+
                     ->searchable(),
 
                 // Products column: concatenate all products x quantity
@@ -159,16 +160,16 @@ class ShopOrdersTable
                             ->filter(fn($item) => $item->delivery_status === 'completed')
                             ->sum(fn($item) => $item->price * $item->quantity)
                     )
-                    ->money('MMK')
-                    ->sortable(),
+                    ->money('MMK'),
+                    
 
                 // Status column: just show "Completed"
                 TextColumn::make('delivery_status')
                     ->label('Status')
                     ->getStateUsing(fn() => 'Completed')
                     ->badge()
-                    ->color(fn() => 'success')
-                    ->sortable(),
+                    ->color(fn() => 'success'),
+                    
 
 
 
@@ -194,7 +195,7 @@ class ShopOrdersTable
                 return \Carbon\Carbon::parse($completedItem->updated_at)
                     ->diffForHumans(['short' => true]); // e.g., "2h ago"
             })
-            ->sortable()
+            
             ]);
     }
 }

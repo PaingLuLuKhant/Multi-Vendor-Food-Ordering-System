@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './RegisterPage.css'; // your full CSS
+import { isValidEmail } from '../../utils/validators';
 
 const RegisterPage = () => {
     const { register } = useAuth();

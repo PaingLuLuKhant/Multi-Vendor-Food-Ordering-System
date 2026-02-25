@@ -100,9 +100,26 @@
 
 <body>
 
-    <div class="header">
+    <!-- <div class="header">
         🚚 Delivery Panel
-    </div>
+    </div> -->
+    <div class="header" style="display: flex; justify-content: space-between; align-items: center;">
+    <span>🚚 Delivery Panel</span>
+    <form method="POST" action="{{ route('logout') }}">
+        @csrf
+        <button type="submit" style="
+            background: #fff;
+            color: #6b1511;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        ">
+            Logout
+        </button>
+    </form>
+</div>
 
     <div class="container">
         <h2>My Assigned Orders</h2>

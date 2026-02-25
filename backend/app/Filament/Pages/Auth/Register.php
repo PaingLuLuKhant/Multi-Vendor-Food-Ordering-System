@@ -24,10 +24,14 @@ class Register extends BaseRegister
                     ->unique($this->getUserModel(), 'email'),
 
                 TextInput::make('password')
-                    ->label('Password')
-                    ->required()
-                    ->password()
-                    ->minLength(8),
+    ->label('Password')
+    ->required()
+    ->password()
+    ->minLength(8)
+    ->rules([
+        'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
+    ])
+    ->helperText('Password must be at least 8 characters and contain at least one uppercase letter and one number'),
 
                 TextInput::make('password_confirmation')
                     ->label('Confirm Password')

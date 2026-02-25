@@ -21,5 +21,11 @@ Route::get('/deli-panel', [DeliveryController::class, 'panel']);
 Route::post('/deli/{id}/delivered', [DeliveryController::class, 'markDelivered']);
 
 
+// Logout route
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/deli-login'); // redirect to homepage or login
+})->name('logout');
+
 // Route::get('/shop-register', [ShopOwnerRegister::class, 'render'])
 //     ->name('shop.register');

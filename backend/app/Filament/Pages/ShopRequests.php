@@ -65,10 +65,10 @@ class ShopRequests extends Page
     public function denyShop($shopId)
     {
         $shop = Shop::findOrFail($shopId);
-        $shop->update(['status' => 'denied']);
+        $shop->update(['status' => 'declined']);
 
         Notification::make()
-            ->title('Shop denied!')
+            ->title('Shop declined!')
             ->danger()
             ->send();
 

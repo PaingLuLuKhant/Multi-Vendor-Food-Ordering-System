@@ -112,6 +112,80 @@
     </div>
 
     <style>
+        /* Modal overlay - no change needed */
+#assignModal {
+    display: none;
+    position: fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+/* Modal content */
+#assignModal > div {
+    padding: 20px;
+    border-radius: 8px;
+    width: 300px;
+    text-align: center;
+    background-color: #fff; /* default light mode */
+    color: #000;           /* default text color */
+}
+
+/* Select box */
+#assignModal select {
+    width: 100%;
+    padding: 6px;
+    margin: 10px 0;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    color: #000;
+}
+
+/* Buttons */
+#assignModal button {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+}
+
+#assignModal button.assign-btn {
+    background-color: #16a34a;
+}
+
+#assignModal button.assign-btn:hover {
+    background-color: #13803d;
+}
+
+#assignModal button.cancel-btn {
+    background-color: #dc2626;
+    margin-left: 5px;
+}
+
+#assignModal button.cancel-btn:hover {
+    background-color: #b91c1c;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    #assignModal > div {
+        background-color: #232222ef;
+        color: #fff;
+    }
+    #assignModal select {
+        background-color: #252d31;
+        color: #fff;
+        border: 1px solid #555;
+    }
+}
         .styled-table td .fi-badge {
             white-space: nowrap;
         }
@@ -143,9 +217,28 @@
         }
 
         /* Dim white separator between rows */
-        .styled-table tbody tr:not(:last-child) td {
+        /* .styled-table tbody tr:not(:last-child) td {
             border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        }
+        } */
+            /* Light mode row border */
+.styled-table tbody tr:not(:last-child) td {
+    border-bottom: 1px solid #e5e7eb;   /* light gray */
+}
+
+/* Dark mode row border */
+.dark .styled-table tbody tr:not(:last-child) td {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
+}
+/* Light mode outer border */
+.styled-table {
+    border: 1px solid #e5e7eb;   /* light gray */
+    border-radius: 12px;
+}
+
+/* Dark mode outer border */
+.dark .styled-table {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
 
         .table-wrapper {
             overflow-x: auto;
@@ -165,7 +258,7 @@
         .styled-table th,
         .styled-table td {
             padding: 15px 27px;
-            border: #808080;
+            /* border: #808080; */
             text-align: left;
             background-color: #f3f4f60c;
         }
@@ -178,13 +271,23 @@
             border-top-right-radius: 16px;
         }
 
-        .styled-table thead {
+        /* .styled-table thead {
             border-radius: 30px;
             background-color: #64606027;
             color: #ffffff;
             font-weight: 600;
-        }
+        } */
+        .styled-table thead {
+    border-radius: 30px;
+    background-color: #f3f4f6;   /* Light mode header */
+    color: #111827;              /* Dark text */
+    font-weight: 600;
+}
 
+.dark .styled-table thead {
+    background-color: #212121f9;   /* Dark mode header */
+    color: #ffffff;              /* White text */
+}
         .assign-btn {
             padding: 6px 12px;
             background-color: #3b82f6;
@@ -272,10 +375,25 @@
 
     <script>
         let currentOrderId = null;
+        // function openAssignModal(orderId) {
+        //     currentOrderId = orderId;
+        //     document.getElementById('assignModal').style.display = 'flex';
+        // }
         function openAssignModal(orderId) {
-            currentOrderId = orderId;
-            document.getElementById('assignModal').style.display = 'flex';
-        }
+        currentOrderId = orderId;
+        const modal = document.getElementById('assignModal');
+        modal.style.display = 'flex';
+
+        // Remove any previous listener first to prevent duplicates
+        modal.onclick = null;
+
+        // Close modal if clicking outside the content
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeAssignModal();
+            }
+        }, { once: true });
+    }
 
         function closeAssignModal() {
             document.getElementById('assignModal').style.display = 'none';
@@ -294,6 +412,7 @@
 
             closeAssignModal();
         }
+        
 
     </script>
 
