@@ -13,15 +13,15 @@ class Order extends Model
         'user_id',
         'total_amount',
         'status',
-        'paidtime',
+        'paid_time',
         'customer_phone',
         'customer_address',
     ];
-    public function orderItems() { 
-        return $this->hasMany(OrderItem::class); 
+    public function orderItems() {
+        return $this->hasMany(OrderItem::class);
     }
-    public function user() { 
-        return $this->belongsTo(User::class); 
+    public function user() {
+        return $this->belongsTo(User::class);
     }
 
 }
