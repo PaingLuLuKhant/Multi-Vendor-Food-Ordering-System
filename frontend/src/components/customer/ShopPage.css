@@ -939,16 +939,7 @@
   position: relative;
 }
 
-.reviews-title::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 60px;
-  height: 2px;
-  background: linear-gradient(135deg, #666666 0%, #333333 100%);
-  border-radius: 1px;
-}
+
 
 .no-reviews {
   text-align: center;
@@ -1628,7 +1619,7 @@
 
 .rating-stars-display .star {
   font-size: 1.5rem;
-  color: #e0e0e0;
+  color: #FFFFFF;
   transition: all var(--transition-fast);
   position: relative;
 }
@@ -2340,5 +2331,269 @@
   .submit-rating-btn,
   .cancel-btn {
     min-height: 48px;
+  }
+}
+/* ========== FIXED RATING STYLES TO MATCH SHOP CARD ========== */
+
+/* Rating container in header */
+.shop-rating-display-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 15px 0;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  gap: 30px;
+}
+
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.rating-stars-display {
+  display: flex;
+  align-items: center;
+}
+
+/* Match shop card rating stars EXACTLY */
+.rating-stars-display .rating-stars {
+  color: #FFFFFF;
+  font-size: 18px;
+  letter-spacing: 2px;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Half star styling - matches shop card exactly */
+.rating-stars-display .half-star {
+  position: relative;
+  display: inline-block;
+  color: #e0e0e070;
+}
+
+.rating-stars-display .half-star::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #FFFFFF;
+}
+
+.rating-score-display {
+  display: flex;
+  flex-direction: column;
+  margin-right: 15px;
+}
+
+.rating-number {
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+  line-height: 1.2;
+}
+
+.rating-count {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.rate-shop-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  min-width: 140px;
+  margin-left: auto;
+}
+
+.rate-shop-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Review stars styling - match shop card too */
+.review-stars .rating-stars {
+  color: #F59E0B;
+  font-size: 16px;
+  letter-spacing: 1px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.review-stars .half-star {
+  position: relative;
+  display: inline-block;
+  color: #e0e0e0;
+}
+
+.review-stars .half-star::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #F59E0B;
+}
+
+/* Dark mode support for review stars */
+@media (prefers-color-scheme: dark) {
+  .review-stars .rating-stars {
+    color: #FFFFFF;
+  }
+  
+  .review-stars .half-star::before {
+    color: #FFFFFF;
+  }
+}
+
+/* Interactive star styling (for modal) - keep as is */
+.star-rating.interactive {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.star-rating.interactive .star {
+  font-size: 2rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.star-rating.interactive .star:hover,
+.star-rating.interactive .star.filled {
+  color: #333333;
+}
+
+.star-rating.interactive .star.half {
+  position: relative;
+  color: #e0e0e0;
+}
+
+.star-rating.interactive .star.half::before {
+  content: '★';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 50%;
+  overflow: hidden;
+  color: #333333;
+}
+
+/* Dark mode for interactive stars */
+@media (prefers-color-scheme: dark) {
+  .star-rating.interactive .star:hover,
+  .star-rating.interactive .star.filled {
+    color: #ffffff;
+  }
+  
+  .star-rating.interactive .star.half::before {
+    color: #ffffff;
+  }
+}
+
+/* Remove old conflicting styles */
+.shop-rating-header {
+  display: none;
+}
+
+/* Disabled button styles */
+.add-to-cart-btn:disabled,
+.quantity-btn:disabled,
+.qty-btn:disabled,
+.remove-btn:disabled,
+.checkout-btn:disabled,
+.clear-all-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+  filter: grayscale(50%);
+  background: #cccccc !important;
+  color: #666666 !important;
+  border-color: #999999 !important;
+}
+
+/* Enhanced closed notice */
+.shop-closed-notice {
+  background: rgba(220, 38, 38, 0.1);
+  border: 2px solid #dc2626;
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.5rem;
+  margin: 1rem 0;
+  color: #dc2626;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  animation: slideDown 0.3s ease-out;
+}
+
+.shop-closed-notice span:first-child {
+  font-size: 1.5rem;
+}
+
+/* Tooltip on hover for disabled buttons */
+.add-to-cart-btn:disabled:hover,
+.quantity-btn:disabled:hover,
+.qty-btn:disabled:hover,
+.remove-btn:disabled:hover,
+.checkout-btn:disabled:hover,
+.clear-all-btn:disabled:hover {
+  position: relative;
+}
+
+.add-to-cart-btn:disabled:hover::after,
+.quantity-btn:disabled:hover::after,
+.qty-btn:disabled:hover::after,
+.remove-btn:disabled:hover::after,
+.checkout-btn:disabled:hover::after,
+.clear-all-btn:disabled:hover::after {
+  content: attr(title);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #333;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  margin-bottom: 5px;
+  z-index: 1000;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .add-to-cart-btn:disabled,
+  .quantity-btn:disabled,
+  .qty-btn:disabled,
+  .remove-btn:disabled,
+  .checkout-btn:disabled,
+  .clear-all-btn:disabled {
+    background: #444444 !important;
+    color: #888888 !important;
+    border-color: #666666 !important;
+  }
+  
+  .shop-closed-notice {
+    background: rgba(220, 38, 38, 0.2);
+    color: #ff6b6b;
+  }
+  
+  .shop-closed-notice p {
+    color: #cccccc !important;
   }
 }

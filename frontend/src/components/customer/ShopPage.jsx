@@ -51,28 +51,22 @@ const ShopPage = () => {
     return getCategoryIcon(shop.category);
   };
 
-  // Format time like 930 -> 09:30
-  const formatTime = (time) => {
-    if (!time) return "";
-    return time; // API already sends "HH:MM" correctly
-  };
+  const formatTime = (time) => time;
 
   const isOpen = shop?.is_open_now;
 
+  // ===== FETCH SHOP DATA =====
   useEffect(() => {
     const fetchShop = async () => {
       try {
         const res = await fetch(`http://127.0.0.1:8000/api/shops/${id}`, {
           headers: { Accept: "application/json" },
         });
-
         if (!res.ok) {
           if (res.status === 404) throw new Error("Shop not found");
           throw new Error("Failed to fetch shop");
         }
-
         const data = await res.json();
-        console.log("SHOP DATA:", data.shop);
         setShop(data.shop);
         fetchRatings();
       } catch (err) {
@@ -81,7 +75,6 @@ const ShopPage = () => {
         setLoading(false);
       }
     };
-
     fetchShop();
   }, [id]);
 
@@ -90,7 +83,6 @@ const ShopPage = () => {
       const res = await fetch(`http://127.0.0.1:8000/api/shops/${id}/ratings`, {
         headers: { Accept: "application/json", Authorization: `Bearer ${token}` },
       });
-
       if (res.ok) {
         const data = await res.json();
         setRatings(data.ratings || []);
@@ -166,25 +158,80 @@ const ShopPage = () => {
     }
   };
 
+  const handleAddToCart = (product) => {
+    if (!isOpen) return;
+    globalAddToCart({
+      ...product,
+      shopId: shop.id,
+      shopName: shop.name,
+      image: product.image || shop.image
+    });
+    setCartVisible(true);
+  };
+
+  const handleUpdateQuantity = (productId, newQty) => {
+    if (!isOpen || newQty < 0) return;
+    globalUpdateQuantity(productId, newQty);
+  };
+
+  const handleRemoveFromCart = (productId) => {
+    if (!isOpen) return;
+    globalRemoveFromCart(productId, shop.id);
+  };
+
+  const handleCheckout = () => {
+    if (!isOpen) return;
+    if (!token) navigate("/login", { state: { from: { pathname: "/checkout" } } });
+    else navigate("/checkout");
+  };
+
+  const handleBackToShops = () => {
+    const lastCategory = sessionStorage.getItem('lastCategory') || 'all';
+    const lastSearch = sessionStorage.getItem('lastSearch') || '';
+    navigate('/', { 
+      state: { 
+        selectedCategory: lastCategory,
+        searchTerm: lastSearch,
+        preserveFilter: true,
+        fromShop: true
+      } 
+    });
+  };
+
+  const filteredProducts = activeTab === "all"
+    ? shop?.products || []
+    : shop.products.filter(p => p.category === activeTab);
+
   const renderStars = (rating, interactive = false, onRate = null) => {
-    return (
-      <div className={`star-rating ${interactive ? 'interactive' : ''}`}>
-        {[1, 2, 3, 4, 5].map(star => {
-          let isFilled = star <= Math.floor(rating);
-          let isHalf = star === Math.ceil(rating) && rating % 1 >= 0.5;
-          return (
-            <span
-              key={star}
-              className={`star ${isFilled ? 'filled' : ''} ${isHalf ? 'half' : ''}`}
-              onClick={() => interactive && onRate && onRate(star)}
-              style={{ cursor: interactive ? 'pointer' : 'default' }}
-            >
-              ★
-            </span>
-          );
-        })}
-      </div>
-    );
+    if (interactive) {
+      return (
+        <div className="star-rating interactive">
+          {[1,2,3,4,5].map(star => {
+            const isFilled = star <= Math.floor(rating);
+            const isHalf = star === Math.ceil(rating) && rating % 1 >= 0.5;
+            return (
+              <span
+                key={star}
+                className={`star ${isFilled ? 'filled' : ''} ${isHalf ? 'half' : ''}`}
+                onClick={() => onRate && onRate(star)}
+                style={{ cursor: 'pointer' }}
+              >★</span>
+            );
+          })}
+        </div>
+      );
+    } else {
+      const fullStars = Math.floor(rating);
+      const hasHalfStar = rating % 1 >= 0.5;
+      const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      return (
+        <span className="rating-stars">
+          {"★".repeat(fullStars)}
+          {hasHalfStar && <span className="half-star">★</span>}
+          {"☆".repeat(emptyStars)}
+        </span>
+      );
+    }
   };
 
   if (loading) return (
@@ -202,63 +249,17 @@ const ShopPage = () => {
 
   const categoryColors = getShopCategoryColors();
   const categoryIcon = getShopCategoryIcon();
-  const formattedCategory = shop ? formatCategoryName(shop.category) : "Shop";
-
-  const handleAddToCart = (product) => {
-    globalAddToCart({
-      ...product,
-      shopId: shop.id,
-      shopName: shop.name,
-      image: product.image || shop.image
-    });
-    setCartVisible(true);
-  };
-
-  const handleUpdateQuantity = (productId, newQty) => {
-    if (newQty < 0) return;
-    globalUpdateQuantity(productId, newQty);
-  };
-
-  const handleRemoveFromCart = (productId) => globalRemoveFromCart(productId, shop.id);
-
-  const handleCheckout = () => {
-    if (!token) navigate("/login", { state: { from: { pathname: "/checkout" } } });
-    else navigate("/checkout");
-  };
-
-  // FIXED: Back button handler that preserves BOTH category AND search term
-  const handleBackToShops = () => {
-    // Get saved filters from sessionStorage
-    const lastCategory = sessionStorage.getItem('lastCategory') || 'all';
-    const lastSearch = sessionStorage.getItem('lastSearch') || '';
-    
-    console.log("Going back with category:", lastCategory, "search:", lastSearch);
-    
-    // Pass both category and search term back to the home page
-    navigate('/', { 
-      state: { 
-        selectedCategory: lastCategory,
-        searchTerm: lastSearch,
-        preserveFilter: true,
-        fromShop: true
-      } 
-    });
-  };
-
-  const filteredProducts = activeTab === "all"
-    ? shop.products
-    : shop.products.filter(p => p.category === activeTab);
 
   return (
     <div className="shop-page">
-      {/* ===== BACK BUTTON ===== */}
+      {/* BACK BUTTON */}
       <div className="shop-page-top-bar">
         <button className="back-to-shops-top" onClick={handleBackToShops}>
           ← Back to All Shops
         </button>
       </div>
 
-      {/* ===== SHOP HEADER ===== */}
+      {/* SHOP HEADER */}
       <div className="shop-header" style={{
         background: categoryColors.gradient,
         '--category-color': categoryColors.primary,
@@ -271,21 +272,26 @@ const ShopPage = () => {
                 <span>{categoryIcon}</span>
               </div>}
           </div>
-
           <div className="shop-header-info">
             <h1>{shop.name}</h1>
             <p className="shop-description">{shop.description}</p>
-
-            {/* Rating */}
+            
+            {/* RATING DISPLAY */}
             <div className="shop-rating-display-header">
               <div className="rating-display">
-                <div className="rating-stars-display">{renderStars(averageRating)}</div>
+                <div className="rating-stars-display">
+                  {renderStars(averageRating)}
+                </div>
                 <div className="rating-score-display">
                   <span className="rating-number">{averageRating.toFixed(1)}</span>
                   <span className="rating-count">({ratingCount} {ratingCount === 1 ? 'review' : 'reviews'})</span>
                 </div>
               </div>
               <button className="rate-shop-btn" onClick={() => { 
+                if (!token) {
+                  navigate("/login", { state: { from: window.location.pathname } });
+                  return;
+                }
                 setEditingRatingId(null); 
                 setRatingComment(""); 
                 setUserRating(0); 
@@ -295,18 +301,16 @@ const ShopPage = () => {
               </button>
             </div>
 
-            {/* Shop Hours & Status - with proper spacing */}
+            {/* SHOP HOURS */}
             <div className="shop-meta-container">
               <div className="meta-item">
                 <span className="meta-icon">⏰</span>
-                <span>
-                  {shop.open_time && shop.close_time
+                <span>{shop.open_time && shop.close_time
                     ? `${formatTime(shop.open_time)} - ${formatTime(shop.close_time)}`
                     : "Hours not set"}
                   {shop.is_closed_today ? " (Closed today)" : ""}
                 </span>
               </div>
-
               <div className="meta-item">
                 <span className="meta-icon">{isOpen ? "🟢" : "🔴"}</span>
                 <span style={{ fontWeight: "bold", color: isOpen ? "#16a34a" : "#dc2626" }}>
@@ -318,11 +322,23 @@ const ShopPage = () => {
         </div>
       </div>
 
-      {/* ===== MAIN CONTENT ===== */}
+      {/* SHOP CLOSED NOTICE */}
+      {!isOpen && (
+        <div className="shop-closed-notice">
+          <span>🔒</span>
+          <div>
+            <strong>This shop is currently closed</strong>
+            {/* <p style={{ fontSize: '0.9rem', marginTop: '0.25rem', color: '#666' }}>
+              Opening hours: {formatTime(shop.open_time)} - {formatTime(shop.close_time)}
+            </p> */}
+          </div>
+        </div>
+      )}
+
+      {/* MAIN CONTENT */}
       <div className="shop-main-content">
         <div className="shop-content-container">
-
-          {/* ===== PRODUCTS SECTION ===== */}
+          {/* PRODUCTS SECTION */}
           <div className="products-section">
             <div className="products-header">
               <h2>Menu Items</h2>
@@ -330,12 +346,9 @@ const ShopPage = () => {
                 <button 
                   className={`category-tab ${activeTab === "all" ? "active" : ""}`} 
                   onClick={() => setActiveTab("all")}
-                >
-                  All Items
-                </button>
+                >All Items</button>
               </div>
             </div>
-
             <div className="products-grid">
               {filteredProducts.map(product => {
                 const quantityInCart = globalQuantities[product.id] || 0;
@@ -348,31 +361,30 @@ const ShopPage = () => {
                         {quantityInCart > 0 && <div className="in-cart-badge">In Cart: {quantityInCart}</div>}
                       </div>
                     </div>
-
                     <div className="product-actions">
                       {quantityInCart > 0 ? (
                         <div className="quantity-controls">
                           <button 
-                            onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)} 
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart - 1)}
                             className="quantity-btn minus"
-                          >
-                            -
-                          </button>
+                            disabled={!isOpen}
+                            title={!isOpen ? "Shop is closed" : "Decrease quantity"}
+                          >-</button>
                           <span className="quantity-display">{quantityInCart}</span>
                           <button 
-                            onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)} 
+                            onClick={() => handleUpdateQuantity(product.id, quantityInCart + 1)}
                             className="quantity-btn plus"
-                          >
-                            +
-                          </button>
+                            disabled={!isOpen}
+                            title={!isOpen ? "Shop is closed" : "Increase quantity"}
+                          >+</button>
                         </div>
                       ) : (
                         <button 
-                          className="add-to-cart-btn" 
+                          className="add-to-cart-btn"
                           onClick={() => handleAddToCart(product)}
-                        >
-                          Add to Cart
-                        </button>
+                          disabled={!isOpen}
+                          title={!isOpen ? "Shop is closed" : "Add to Cart"}
+                        >Add to Cart</button>
                       )}
                     </div>
                   </div>
@@ -381,7 +393,7 @@ const ShopPage = () => {
             </div>
           </div>
 
-          {/* ===== ORDER SUMMARY ===== */}
+          {/* ORDER SUMMARY */}
           <div className="order-summary-section">
             <div className="order-summary-card">
               <div className="order-summary-header">
@@ -390,7 +402,12 @@ const ShopPage = () => {
                   <div className="items-count">{shopCartCount} items</div>
                 </div>
                 {shopCartCount > 0 && (
-                  <button className="clear-all-btn" onClick={() => clearShopCart(shop.id)}>
+                  <button 
+                    className="clear-all-btn" 
+                    onClick={() => clearShopCart(shop.id)}
+                    disabled={!isOpen}
+                    title={!isOpen ? "Shop is closed" : "Clear all items"}
+                  >
                     Clear All
                   </button>
                 )}
@@ -408,29 +425,29 @@ const ShopPage = () => {
                         <div className="item-controls">
                           <div className="quantity-selector">
                             <button 
-                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)} 
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) - 1)}
                               className="qty-btn"
-                            >
-                              -
-                            </button>
+                              disabled={!isOpen}
+                              title={!isOpen ? "Shop is closed" : "Decrease quantity"}
+                            >-</button>
                             <span className="qty-display">{globalQuantities[item.id] || 0}</span>
                             <button 
-                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)} 
+                              onClick={() => handleUpdateQuantity(item.id, (globalQuantities[item.id] || 0) + 1)}
                               className="qty-btn"
-                            >
-                              +
-                            </button>
+                              disabled={!isOpen}
+                              title={!isOpen ? "Shop is closed" : "Increase quantity"}
+                            >+</button>
                           </div>
                           <div className="item-price-section">
                             <span className="item-price">
                               MMK {((item.price || 0) * (globalQuantities[item.id] || 0)).toFixed(2)}
                             </span>
                             <button 
-                              onClick={() => handleRemoveFromCart(item.id)} 
+                              onClick={() => handleRemoveFromCart(item.id)}
                               className="remove-btn"
-                            >
-                              Remove
-                            </button>
+                              disabled={!isOpen}
+                              title={!isOpen ? "Shop is closed" : "Remove item"}
+                            >Remove</button>
                           </div>
                         </div>
                       </div>
@@ -448,7 +465,12 @@ const ShopPage = () => {
                     </div>
                   </div>
 
-                  <button className="checkout-btn" onClick={handleCheckout}>
+                  <button 
+                    className="checkout-btn"
+                    onClick={handleCheckout}
+                    disabled={!isOpen || shopCartCount === 0}
+                    title={!isOpen ? "Shop is closed" : "Proceed to Checkout"}
+                  >
                     Proceed to Checkout
                   </button>
                 </>
@@ -459,19 +481,11 @@ const ShopPage = () => {
                   <small>Add items from the menu to get started!</small>
                 </div>
               )}
-
-              {shopCartCount > 0 && (
-                <div className="shop-actions">
-                  <button className="continue-shopping-btn" onClick={() => navigate("/")}>
-                    Continue Shopping
-                  </button>
-                </div>
-              )}
             </div>
           </div>
         </div>
 
-        {/* ===== REVIEWS SECTION ===== */}
+        {/* REVIEWS SECTION */}
         <div className="shop-reviews-section">
           <h2 className="reviews-title">Customer Reviews ({ratingCount})</h2>
 
@@ -486,18 +500,17 @@ const ShopPage = () => {
                       <strong className="review-user">{review.user?.name || "Anonymous"}</strong>
                       {review.is_own && <span className="own-review-badge">Your Review</span>}
                     </div>
-
                     <div className="review-rating-actions">
-                      {renderStars(review.rating)}
+                      <div className="review-stars">
+                        {renderStars(review.rating)}
+                      </div>
                       {review.is_own && (
                         <div className="review-actions">
                           <button 
                             className="edit-review-btn" 
                             onClick={() => handleEditRating(review)} 
                             disabled={deletingRatingId === review.id}
-                          >
-                            Edit
-                          </button>
+                          >Edit</button>
                           <button 
                             className="delete-review-btn" 
                             onClick={() => handleDeleteRating(review.id)} 
@@ -509,7 +522,6 @@ const ShopPage = () => {
                       )}
                     </div>
                   </div>
-
                   {review.comment && <p className="review-comment">"{review.comment}"</p>}
                   <small className="review-date">
                     {new Date(review.created_at).toLocaleDateString()}
@@ -523,7 +535,7 @@ const ShopPage = () => {
         </div>
       </div>
 
-      {/* ===== BEAUTIFUL RATING MODAL ===== */}
+      {/* RATING MODAL */}
       {showRatingForm && (
         <div className="rating-modal-overlay" onClick={() => setShowRatingForm(false)}>
           <div className="rating-modal" onClick={e => e.stopPropagation()}>
@@ -531,7 +543,6 @@ const ShopPage = () => {
               <h3>{editingRatingId ? 'Edit Your Review' : 'Rate This Shop'}</h3>
               <button className="close-modal-btn" onClick={() => setShowRatingForm(false)}>×</button>
             </div>
-
             <div className="rating-modal-body">
               <div className="rating-section">
                 <span className="rating-label">YOUR RATING</span>
@@ -544,39 +555,23 @@ const ShopPage = () => {
                   </div>
                 )}
               </div>
-
               <div className="comment-section">
                 <label>YOUR COMMENT</label>
                 <textarea
                   value={ratingComment}
-                  onChange={(e) => {
-                    if (e.target.value.length <= 500) {
-                      setRatingComment(e.target.value);
-                    }
-                  }}
+                  onChange={(e) => setRatingComment(e.target.value.slice(0, 500))}
                   placeholder="Share your experience... (optional)"
                   maxLength={500}
                 />
               </div>
-
               <div className="rating-modal-footer">
-                <button 
-                  className="cancel-btn" 
-                  onClick={() => setShowRatingForm(false)}
-                >
-                  Cancel
-                </button>
+                <button className="cancel-btn" onClick={() => setShowRatingForm(false)}>Cancel</button>
                 <button 
                   className={`submit-rating-btn ${isSubmittingRating ? 'loading' : ''}`}
                   onClick={handleSubmitRating} 
                   disabled={isSubmittingRating || userRating === 0}
                 >
-                  {isSubmittingRating 
-                    ? 'Submitting...' 
-                    : editingRatingId 
-                      ? 'Update Review' 
-                      : 'Submit Review'
-                  }
+                  {isSubmittingRating ? 'Submitting...' : editingRatingId ? 'Update Review' : 'Submit Review'}
                 </button>
               </div>
             </div>
