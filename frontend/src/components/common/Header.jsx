@@ -83,7 +83,7 @@ const Header = () => {
         <div className="header-container">
           {/* Logo */}
           <div className="header-logo" onClick={() => navigate('/')}>
-            <span className="logo-icon">🛒</span>
+            {/* <span className="logo-icon">🛒</span> */}
             <span className="logo-text">Hungry <span>Hub</span></span>
           </div>
 
