@@ -28,7 +28,7 @@ class ShopInsights extends StatsOverviewWidget
         ];
     }
     public static function canView(): bool
-{
-    return false;
-}
+    {
+        return false;
+    }
 }

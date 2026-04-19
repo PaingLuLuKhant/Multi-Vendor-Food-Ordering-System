@@ -27,8 +27,4 @@ class UserInsights extends StatsOverviewWidget
                 ->color('info'),
         ];
     }
-    public static function canView(): bool
-{
-    return false;
-}
 }

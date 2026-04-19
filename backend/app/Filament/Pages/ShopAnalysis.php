@@ -24,14 +24,15 @@ class ShopAnalysis extends Page
     }
 
     /**
-     * 📈 Shop chart data (last 12 months)
+     * 📈 Shop chart data (last 12 months) - Only approved shops
      */
     public function getShopChartData(): array
     {
         $start = Carbon::now()->subMonths(11)->startOfMonth();
         $end = Carbon::now()->endOfMonth();
 
-        $shops = Shop::selectRaw('MONTH(created_at) as month, COUNT(*) as total')
+        $shops = Shop::where('status', 'approved')
+            ->selectRaw('MONTH(created_at) as month, COUNT(*) as total')
             ->whereBetween('created_at', [$start, $end])
             ->groupBy('month')
             ->orderBy('month')

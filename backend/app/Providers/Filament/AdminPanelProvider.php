@@ -18,25 +18,13 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 use App\Filament\Pages\Auth\Register;
+use App\Filament\Widgets\ShopInsights;
+use App\Filament\Widgets\ShopStatusList;
 
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
-        $user = auth()->user();
-
-        $widgets = [];
-
-        if ($user) {
-            if ($user->isAdmin()) {
-                $widgets[] = \App\Filament\Widgets\AdminStatsOverview::class;
-            }
-
-            if ($user->isShopOwner()) {
-                $widgets[] = \App\Filament\Widgets\ShopOwnerStatsOverview::class;
-            }
-        }
-
         return $panel
             ->default()
             ->id('admin')
@@ -52,8 +40,15 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->globalSearch(false)
+            
+            // Register widgets explicitly
+            ->widgets([
+                ShopInsights::class,
+                //ShopStatusList::class,
+            ])
+            
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets($widgets)
+
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
