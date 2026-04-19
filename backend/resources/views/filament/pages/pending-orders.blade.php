@@ -1,9 +1,7 @@
 <x-filament::page>
-
     @php
         $user = auth()->user();
         $shopIds = \App\Models\Shop::where('user_id', $user->id)->pluck('id');
-        $deliveries = \App\Models\Delivery::all();
     @endphp
 
     @if($this->pendingOrders->isEmpty())
@@ -12,408 +10,253 @@
         <div class="table-wrapper">
             <table class="styled-table">
                 <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Order ID</th>
-                        <th>Customer Name</th>
-                        <th>Products</th>
-                        <th>Total Qty</th>
-                        <th>Total Price</th>
-                        <th>Status</th>
-                        <th>Assign Delivery</th>
-                    </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Order ID</th>
+                    <th>Customer Name</th>
+                    <th>Products</th>
+                    <th>Total Qty</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Assign Delivery</th>
+                </tr>
                 </thead>
                 <tbody>
-                    @foreach($this->pendingOrders as $index => $order)
-                        @php
-                            $items = $order->orderItems
-                                ->filter(
-                                    fn($item) =>
-                                    in_array($item->product->shop_id, $shopIds->toArray()) &&
-                                    in_array($item->delivery_status, ['pending', 'assigned'])
-                                );
-                        @endphp
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $order->id }}</td>
-                            <td>{{ $order->user->name }}</td>
-                            <td>
-                                <!-- {!! $items->map(fn($item) => $item->product->name . ' x ' . $item->quantity)->join('<br>') !!} -->
-                                @foreach($items as $item)
-                                    <div class="product-line">
-                                        {{ $item->product->name }} x {{ $item->quantity }}
-                                    </div>
-                                @endforeach
-                            </td>
-                            <td>{{ $items->sum('quantity') }}</td>
-                            <td>{{ number_format($items->sum(fn($item) => $item->price * $item->quantity)) }} MMK</td>
-                            <!-- <td>
-                                        @php
-                                            $statuses = $items->pluck('delivery_status')->unique();
-                                            $statusText = $statuses->map(fn($s) => $s === 'assigned' ? 'Delivery Assigned' : ucfirst($s))->join(', ');
-                                            $statusColor = $statuses->contains('pending') ? '#f59e0b' : '#16a34a';
-                                        @endphp
-                                        <span style="padding:4px 8px; border-radius:4px; color:white; background-color:{{ $statusColor }};">
-                                            {{ $statusText }}
-                                        </span>
-                                    </td> -->
-                            <td>
-                                @php
-                                    $statuses = $items->pluck('delivery_status')->unique();
-                                    $isPending = $statuses->contains('pending');
-                                    $isAssigned = $statuses->contains('assigned');
-                                @endphp
+                @foreach($this->pendingOrders as $index => $order)
+                    @php
+                        $items = $order->orderItems->filter(fn($item) => $item->product && in_array($item->product->shop_id, $shopIds->toArray()));
+                    @endphp
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $order->id }}</td>
+                        <td>{{ $order->user->name ?? 'Unknown' }}</td>
 
-                                @if($isPending)
-                                    <x-filament::badge color="warning">
-                                        Pending
-                                    </x-filament::badge>
-                                @elseif($isAssigned)
-                                    <x-filament::badge color="info">
-                                        Delivery Assigned
-                                    </x-filament::badge>
-                                @endif
-                            </td>
-                            <td>
-                                @if($items->isNotEmpty())
-                                    <button onclick="openAssignModal({{ $order->id }})" class="assign-btn">
-                                        Assign
-                                    </button>
-                                @else
-                                    -
-                                @endif
-                            </td>
-                        </tr>
-                    @endforeach
+                        <!-- PRODUCTS -->
+                        <td>
+                            @foreach($items as $item)
+                                <div class="product-line">{{ $item->product->name }} x {{ $item->quantity }}</div>
+                            @endforeach
+                        </td>
+
+                        <!-- TOTAL QTY -->
+                        <td>{{ $items->sum('quantity') }}</td>
+
+                        <!-- TOTAL PRICE -->
+                        <td>{{ number_format($items->sum(fn($item) => $item->price * $item->quantity)) }} MMK</td>
+
+                        <!-- STATUS -->
+                        <td>
+                            @if($order->delivery_status == 'pending')
+                                <x-filament::badge color="warning">Pending</x-filament::badge>
+                            @elseif($order->delivery_status == 'assigned')
+                                <x-filament::badge color="info">Assigned to {{ $order->delivery->name ?? 'Delivery' }}</x-filament::badge>
+                            @elseif($order->delivery_status == 'partial')
+                                <x-filament::badge color="warning">Partially Assigned</x-filament::badge>
+                            @elseif($order->delivery_status == 'delivered')
+                                <x-filament::badge color="success">Delivered</x-filament::badge>
+                            @endif
+                        </td>
+
+                        <!-- ASSIGN BUTTON -->
+                        <td>
+                            @if(!$order->my_shop_assigned && ($order->delivery_status == 'pending' || $order->delivery_status == 'partial'))
+                                <button type="button" onclick="openAssignModal({{ $order->id }})" class="assign-btn">Assign</button>
+                            @elseif($order->my_shop_assigned)
+                                <span style="color: #16a34a;">✓ Assigned</span>
+                            @else
+                                <span>-</span>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
                 </tbody>
             </table>
         </div>
     @endif
 
-    <!-- Modal -->
-    <div id="assignModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-        background: rgba(0,0,0,0.4); align-items:center; justify-content:center;">
-        <div style="background-color: #232222ef; padding:20px; border-radius:8px; width:300px; text-align:center;">
-            <h3>Select Delivery Person</h3>
-            <select id="deliverySelect"
-                style="width:100%;background-color: #252d31; margin:10px 0; padding:6px; border-radius:4px;">
-                <option value="">Select</option>
-                @foreach($deliveries as $d)
-                    <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->area }})</option>
-                @endforeach
-            </select>
-            <div style="margin-top:10px;">
-                <button onclick="assignDelivery()"
-                    style="padding:6px 12px; background:#16a34a; color:white; border:none; border-radius:4px;">Assign</button>
-                <button onclick="closeAssignModal()"
-                    style="padding:6px 12px; background:#dc2626; color:white; border:none; border-radius:4px; margin-left:5px;">Cancel</button>
+    <!-- MODAL -->
+    <div id="assignModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:99999;" wire:ignore>
+        <div style="display:flex; align-items:center; justify-content:center; width:100%; height:100%;">
+            <div class="modal-content">
+                <h3 class="modal-title">Select Delivery Person</h3>
+                <select id="deliverySelect" class="modal-select">
+                    <option value="">-- Select --</option>
+                </select>
+                <div class="modal-buttons">
+                    <button type="button" onclick="assignDelivery()" class="modal-btn-primary">Assign</button>
+                    <button type="button" onclick="closeAssignModal()" class="modal-btn-secondary">Cancel</button>
+                </div>
             </div>
         </div>
     </div>
 
     <style>
-        /* Modal overlay - no change needed */
-#assignModal {
-    display: none;
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.4);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 999;
-}
-
-/* Modal content */
-#assignModal > div {
-    padding: 20px;
-    border-radius: 8px;
-    width: 300px;
-    text-align: center;
-    background-color: #fff; /* default light mode */
-    color: #000;           /* default text color */
-}
-
-/* Select box */
-#assignModal select {
-    width: 100%;
-    padding: 6px;
-    margin: 10px 0;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background-color: #fff;
-    color: #000;
-}
-
-/* Buttons */
-#assignModal button {
-    padding: 6px 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    color: #fff;
-}
-
-#assignModal button.assign-btn {
-    background-color: #16a34a;
-}
-
-#assignModal button.assign-btn:hover {
-    background-color: #13803d;
-}
-
-#assignModal button.cancel-btn {
-    background-color: #dc2626;
-    margin-left: 5px;
-}
-
-#assignModal button.cancel-btn:hover {
-    background-color: #b91c1c;
-}
-
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    #assignModal > div {
-        background-color: #232222ef;
-        color: #fff;
-    }
-    #assignModal select {
-        background-color: #252d31;
-        color: #fff;
-        border: 1px solid #555;
-    }
-}
-        .styled-table td .fi-badge {
-            white-space: nowrap;
-        }
-
-
-        .styled-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            table-layout: auto;
-            /* VERY IMPORTANT */
-            font-size: 13px;
-        }
-
-        .styled-table th,
-        .styled-table td {
-            padding: 10px 12px;
-            vertical-align: top;
-            /* top align */
-        }
-
-        .product-line {
-            margin-bottom: 4px;
-        }
-
-
-        .product-line:last-child {
-            margin-bottom: 0;
-        }
-
-        /* Dim white separator between rows */
-        /* .styled-table tbody tr:not(:last-child) td {
-            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-        } */
-            /* Light mode row border */
-.styled-table tbody tr:not(:last-child) td {
-    border-bottom: 1px solid #e5e7eb;   /* light gray */
-}
-
-/* Dark mode row border */
-.dark .styled-table tbody tr:not(:last-child) td {
-    border-bottom: 2px solid rgba(255, 255, 255, 0.15);
-}
-/* Light mode outer border */
-.styled-table {
-    border: 1px solid #e5e7eb;   /* light gray */
-    border-radius: 12px;
-}
-
-/* Dark mode outer border */
-.dark .styled-table {
-    border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
         .table-wrapper {
             overflow-x: auto;
         }
-
         .styled-table {
-            font-size: 15px;
             width: 100%;
-            border-collapse: separate;
-            font-family: sans-serif;
-            background-color: #80808000;
-            padding: 5px;
-            border-spacing: 0;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-collapse: collapse;
+            font-size: 14px;
         }
-
         .styled-table th,
         .styled-table td {
-            padding: 15px 27px;
-            /* border: #808080; */
+            padding: 12px 15px;
             text-align: left;
-            background-color: #f3f4f60c;
+            border-bottom: 1px solid #e5e7eb;
         }
-
-        .styled-table thead tr th:first-child {
-            border-top-left-radius: 16px;
-        }
-
-        .styled-table thead tr th:last-child {
-            border-top-right-radius: 16px;
-        }
-
-        /* .styled-table thead {
-            border-radius: 30px;
-            background-color: #64606027;
-            color: #ffffff;
-            font-weight: 600;
-        } */
         .styled-table thead {
-    border-radius: 30px;
-    background-color: #f3f4f6;   /* Light mode header */
-    color: #111827;              /* Dark text */
-    font-weight: 600;
-}
-
-.dark .styled-table thead {
-    background-color: #212121f9;   /* Dark mode header */
-    color: #ffffff;              /* White text */
-}
+            background-color: #f3f4f6;
+            font-weight: 600;
+        }
+        .dark .styled-table thead {
+            background-color: #1f2937;
+        }
+        .dark .styled-table td {
+            border-bottom-color: #374151;
+        }
+        .product-line {
+            margin-bottom: 4px;
+        }
+        .product-line:last-child {
+            margin-bottom: 0;
+        }
         .assign-btn {
             padding: 6px 12px;
             background-color: #3b82f6;
-            color: #fff;
+            color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
         }
-
         .assign-btn:hover {
             background-color: #2563eb;
         }
-
-        .styled-table th:nth-child(4),
-        .styled-table td:nth-child(4) {
-            /* 4th column = Products */
-            width: 200px;
-            /* adjust as needed */
-            max-width: 300px;
-            white-space: normal;
-            /* allow wrapping */
-            word-wrap: break-word;
+        .no-pending {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
         }
 
-        .styled-table td:nth-child(2) {
-            /* 4th column = Products */
-            width: 50px;
-            /* adjust as needed */
-            max-width: 300px;
-            white-space: normal;
-            /* allow wrapping */
-            word-wrap: break-word;
+        /* Modal Styles */
+        .modal-content {
+            background-color: #ffffff;
+            padding: 24px;
+            border-radius: 12px;
+            width: 360px;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
         }
-
-        .styled-table td:nth-child(3) {
-            /* 4th column = Products */
-            width: 190px;
-            /* adjust as needed */
-            max-width: 300px;
-            white-space: normal;
-            /* allow wrapping */
-            word-wrap: break-word;
+        .dark .modal-content {
+            background-color: #1f2937;
+            border: 1px solid #374151;
         }
-
-        .styled-table td:nth-child(5) {
-            /* 4th column = Products */
-            width: 70px;
-            /* adjust as needed */
-            max-width: 300px;
-            white-space: normal;
-            /* allow wrapping */
-            word-wrap: break-word;
+        .modal-title {
+            margin-bottom: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #111827;
         }
-
-        .styled-table td:nth-child(7) {
-            /* 4th column = Products */
-            width: 250px;
-            /* adjust as needed */
-            max-width: 300px;
-            white-space: normal;
-            /* allow wrapping */
-            word-wrap: break-word;
+        .dark .modal-title {
+            color: #f3f4f6;
         }
-
-        /* Let row grow naturally */
-        .styled-table tbody tr {
-            height: auto;
+        .modal-select {
+            width: 100%;
+            padding: 10px 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #111827;
+            font-size: 14px;
         }
-
-        /* Align all cells to top so multi-line looks correct */
-        .styled-table td {
-            vertical-align: top;
+        .dark .modal-select {
+            background-color: #374151;
+            border-color: #4b5563;
+            color: #f3f4f6;
         }
-
-        /* Better spacing between product lines */
-        .styled-table td:nth-child(4) {
-            line-height: 1.6;
+        .modal-select option {
+            background-color: #ffffff;
+            color: #111827;
         }
-
-
-        td span {
-            font-size: 0.875rem;
+        .dark .modal-select option {
+            background-color: #374151;
+            color: #f3f4f6;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        .modal-btn-primary {
+            padding: 8px 20px;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .modal-btn-primary:hover {
+            background-color: #059669;
+        }
+        .modal-btn-secondary {
+            padding: 8px 20px;
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .modal-btn-secondary:hover {
+            background-color: #dc2626;
         }
     </style>
 
     <script>
         let currentOrderId = null;
-        // function openAssignModal(orderId) {
-        //     currentOrderId = orderId;
-        //     document.getElementById('assignModal').style.display = 'flex';
-        // }
+        let isLoadingOptions = false;
+
         function openAssignModal(orderId) {
-        currentOrderId = orderId;
-        const modal = document.getElementById('assignModal');
-        modal.style.display = 'flex';
+            if (isLoadingOptions) return;
 
-        // Remove any previous listener first to prevent duplicates
-        modal.onclick = null;
+            currentOrderId = orderId;
+            const modal = document.getElementById('assignModal');
+            modal.style.display = 'block';
+            isLoadingOptions = true;
 
-        // Close modal if clicking outside the content
-        modal.addEventListener('click', function(e) {
-            if (e.target === modal) {
-                closeAssignModal();
-            }
-        }, { once: true });
-    }
+            @this.call('getDeliveryOptionsForOrder', orderId).then(options => {
+                const select = document.getElementById('deliverySelect');
+                select.innerHTML = '<option value="">-- Select --</option>';
+                if (options.length === 0) {
+                    select.innerHTML = '<option value="">No delivery persons available</option>';
+                } else {
+                    options.forEach(option => {
+                        select.innerHTML += `<option value="${option.id}">${option.name} (${option.area})</option>`;
+                    });
+                }
+                select.value = '';
+                isLoadingOptions = false;
+            }).catch(() => {
+                isLoadingOptions = false;
+            });
+        }
 
         function closeAssignModal() {
-            document.getElementById('assignModal').style.display = 'none';
+            const modal = document.getElementById('assignModal');
+            modal.style.display = 'none';
             document.getElementById('deliverySelect').value = '';
+            currentOrderId = null;
         }
 
         function assignDelivery() {
-            let deliveryId = document.getElementById('deliverySelect').value;
+            const deliveryId = document.getElementById('deliverySelect').value;
             if (!deliveryId || !currentOrderId) {
-                alert('Please select delivery');
+                alert('Please select a delivery person');
                 return;
             }
-
-            // Call PHP method directly from Filament Livewire page
             @this.call('assignDelivery', currentOrderId, deliveryId);
-
             closeAssignModal();
         }
-        
-
     </script>
-
 </x-filament::page>

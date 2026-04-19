@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OrderItem;
 use App\Models\Order;
-use App\Models\Shop;
 use App\Models\Delivery;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\DB;
+
 class DeliveryController extends Controller
 {
-    // Login page (keep as is)
+    // Login page
     public function showLogin()
     {
         return view('delivery.login');
@@ -25,127 +23,52 @@ class DeliveryController extends Controller
             return back()->with('error', 'Invalid phone or password');
         }
 
-        // Very simple session login
         session(['deli_id' => $rider->id]);
 
         return redirect('/deli-panel');
     }
 
-    // Delivery panel
+    // ✅ Delivery panel (NOW USES ORDERS, NOT ORDER_ITEMS)
     public function panel()
     {
         $deliId = session('deli_id');
 
+        if (!$deliId) {
+            return redirect('/deli-login');
+        }
 
-        $orderItems = OrderItem::with('product.shop', 'order.user')
+        $orders = Order::with(['orderItems.product', 'user'])
             ->where('delivery_id', $deliId)
-            ->where('delivery_status', 'assigned') // only assigned items
+            ->where('delivery_status', 'assigned')
+            ->orderByDesc('created_at')
             ->get();
 
-        return view('delivery.panel', compact('orderItems'));
+        return view('delivery.panel', compact('orders'));
     }
 
-    // Mark delivered
-//  public function markDelivered($id)
-// {
-//     $item = OrderItem::with('order')->find($id);
+    // ✅ Mark FULL ORDER as delivered
+    public function markDelivered($orderId)
+    {
+        $deliId = session('deli_id');
 
-//     if (!$item) {
-//         return back()->with('error', 'Item not found');
-//     }
+        if (!$deliId) {
+            return back()->with('error', 'Not logged in.');
+        }
 
-//     // Update the delivery status of this item
-//     $item->delivery_status = 'completed';
-//     $item->save();
+        // ✅ Only allow assigned delivery person
+        $order = Order::where('id', $orderId)
+            ->where('delivery_id', $deliId)
+            ->first();
 
-//     // Load order
-//     $order = $item->order;
+        if (!$order) {
+            return back()->with('error', 'Order not found or not assigned to you.');
+        }
 
-//     if ($order) {
-//         // Check if all items are completed
-//         $allCompleted = $order->orderItems()->where('delivery_status', '!=', 'completed')->doesntExist();
-
-//         if ($allCompleted) {
-//             $order->status = 'completed';
-//             $order->save();
-//         }
-//     }
-
-//     return back()->with('success', 'Order updated!');
-// }
-
-// public function markDelivered($orderId)
-// {
-//     // Load the order with items
-//     $order = Order::with('orderItems.product')->find($orderId);
-
-//     if (!$order) {
-//         return back()->with('error', 'Order not found');
-//     }
-
-//     // Filter items belonging to this shop and not already completed
-//     $shopIds = Shop::where('user_id', auth()->id())->pluck('id');
-
-//     $itemsToUpdate = $order->orderItems
-//         ->filter(fn($item) =>
-//             in_array($item->product->shop_id, $shopIds->toArray()) &&
-//             $item->delivery_status !== 'completed'
-//         );
-
-//     // Update all items to completed
-//     foreach ($itemsToUpdate as $item) {
-//         $item->delivery_status = 'completed';
-//         $item->save();
-//     }
-
-//     // If all items of the order are completed, update order status
-//     $allCompleted = $order->orderItems()->where('delivery_status', '!=', 'completed')->doesntExist();
-//     if ($allCompleted) {
-//         $order->status = 'completed';
-//         $order->save();
-//     }
-
-//     return back()->with('success', 'Order updated!');
-// }
-
-
-public function markDelivered($orderId)
-{
-    // Get delivery rider ID from session
-    $deliId = session('deli_id');
-
-    if (!$deliId) {
-        return back()->with('error', 'Not logged in as delivery person.');
-    }
-
-    // Load the order with items assigned to this delivery rider
-    $order = Order::with(['orderItems' => function($q) use ($deliId) {
-        $q->where('delivery_id', $deliId)
-          ->where('delivery_status', 'assigned');
-    }])->find($orderId);
-
-    if (!$order || $order->orderItems->isEmpty()) {
-        return back()->with('error', 'No assigned items to mark as completed.');
-    }
-
-    // Update all assigned items to completed
-    foreach ($order->orderItems as $item) {
-        $item->delivery_status = 'completed';
-        $item->save();
-    }
-
-    // If all items of the order are completed (for all shops), update order status
-    $allCompleted = $order->orderItems()->where('delivery_status', '!=', 'completed')->doesntExist();
-    if ($allCompleted) {
+        // ✅ Update order ONLY (no more order_items update)
+        $order->delivery_status = 'completed';
         $order->status = 'completed';
         $order->save();
+
+        return back()->with('success', 'Order marked as completed!');
     }
-
-    return back()->with('success', 'Order marked as completed!');
-}
-
-
-
-
-
 }
