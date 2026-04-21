@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
 use App\Models\Delivery;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
 class DeliveryController extends Controller
 {
-    // Login page
     public function showLogin()
     {
         return view('delivery.login');
@@ -19,7 +18,7 @@ class DeliveryController extends Controller
     {
         $rider = Delivery::where('phone', $request->phone)->first();
 
-        if (!$rider || !Hash::check($request->password, $rider->password)) {
+        if (! $rider || ! Hash::check($request->password, $rider->password)) {
             return back()->with('error', 'Invalid phone or password');
         }
 
@@ -28,12 +27,11 @@ class DeliveryController extends Controller
         return redirect('/deli-panel');
     }
 
-    // ✅ Delivery panel (NOW USES ORDERS, NOT ORDER_ITEMS)
     public function panel()
     {
         $deliId = session('deli_id');
 
-        if (!$deliId) {
+        if (! $deliId) {
             return redirect('/deli-login');
         }
 
@@ -46,27 +44,37 @@ class DeliveryController extends Controller
         return view('delivery.panel', compact('orders'));
     }
 
-    // ✅ Mark FULL ORDER as delivered
     public function markDelivered($orderId)
     {
         $deliId = session('deli_id');
 
-        if (!$deliId) {
+        if (! $deliId) {
             return back()->with('error', 'Not logged in.');
         }
 
-        // ✅ Only allow assigned delivery person
-        $order = Order::where('id', $orderId)
+        $order = Order::with('orderItems')
+            ->where('id', $orderId)
             ->where('delivery_id', $deliId)
             ->first();
 
-        if (!$order) {
+        if (! $order) {
             return back()->with('error', 'Order not found or not assigned to you.');
         }
 
-        // ✅ Update order ONLY (no more order_items update)
-        $order->delivery_status = 'completed';
-        $order->status = 'completed';
+        $assignedItems = $order->orderItems()
+            ->where('delivery_id', $deliId)
+            ->update(['delivery_status' => 'completed']);
+
+        if ($assignedItems === 0) {
+            return back()->with('error', 'No assigned items were found for this order.');
+        }
+
+        $hasIncompleteItems = $order->orderItems()
+            ->where('delivery_status', '!=', 'completed')
+            ->exists();
+
+        $order->delivery_status = $hasIncompleteItems ? 'partial' : 'completed';
+        $order->status = $hasIncompleteItems ? 'partial' : 'completed';
         $order->save();
 
         return back()->with('success', 'Order marked as completed!');

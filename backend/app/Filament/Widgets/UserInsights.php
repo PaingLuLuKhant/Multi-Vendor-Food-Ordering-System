@@ -27,4 +27,8 @@ class UserInsights extends StatsOverviewWidget
                 ->color('info'),
         ];
     }
+    public static function canView(): bool
+    {
+        return auth()->user()?->isAdmin();
+    }
 }
