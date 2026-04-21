@@ -261,12 +261,12 @@ const OrderConfirmation = () => {
           </Link>
         </div>
 
-        <div className="confirmation-footer">
+        {/* <div className="confirmation-footer">
           {email && (
             <p>A confirmation email has been sent to <strong>{email}</strong></p>
           )}
           <p>We'll notify you when your order is ready for delivery.</p>
-        </div>
+        </div> */}
       </div>
     </div>
   );

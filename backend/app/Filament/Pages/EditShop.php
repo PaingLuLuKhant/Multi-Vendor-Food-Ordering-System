@@ -13,10 +13,14 @@ use App\Models\Shop;
 use BackedEnum;
 use UnitEnum;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Forms\Components\FileUpload;
+use Illuminate\Support\Facades\Storage;
+use Livewire\WithFileUploads;
 
 class EditShop extends Page
 {
     use InteractsWithSchemas;
+    use WithFileUploads; // Add this trait
 
     protected static ?string $navigationLabel = 'Edit Your Shop';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-pencil-square';
@@ -28,12 +32,12 @@ class EditShop extends Page
 
     public Shop $shop;
     public array $data = [];
+    public $image; // Separate property for image upload
 
     public static function shouldRegisterNavigation(): bool
     {
         return true;
     }
-
 
     public function mount(): void
     {
@@ -50,8 +54,12 @@ class EditShop extends Page
             'close_time'     => $this->shop->close_time ?? '21:00',
             'is_closed_today' => $this->shop->is_closed_today ?? false,
         ];
-    }
 
+        // Load existing image if any
+        if ($this->shop->image) {
+            $this->image = $this->shop->image;
+        }
+    }
 
     public function schema(Schema $schema): Schema
     {
@@ -65,18 +73,32 @@ class EditShop extends Page
                             ->required(),
 
                         TextInput::make('category')
+                            ->label('Category')
                             ->required(),
 
                         TextInput::make('phone')
                             ->label('Phone')
-                            ->type('tel')  // <-- Fixed here
+                            ->type('tel')
                             ->required(),
 
                         Textarea::make('description')
+                            ->label('Description')
                             ->rows(3),
 
                         Textarea::make('address')
+                            ->label('Address')
                             ->rows(2),
+
+                        // FILE UPLOAD - Separate from data array
+                        FileUpload::make('image')
+                            ->label('Shop Image')
+                            ->image()
+                            ->imageEditor()
+                            ->directory('shops')
+                            ->visibility('public')
+                            ->maxSize(2048)
+                            ->helperText('Upload a shop logo or image (max 2MB)')
+                            ->columnSpanFull(),
                     ]),
 
                 Section::make('Shop Hours')
@@ -92,16 +114,16 @@ class EditShop extends Page
                             ->required(),
 
                         Toggle::make('is_closed_today')
-                            ->label('Close Today')
+                            ->label('Closed Today')
                             ->helperText('If enabled, the shop will be closed today.'),
                     ]),
             ]);
     }
 
-
     public function save(): void
     {
-        $this->shop->update([
+        // Prepare update data
+        $updateData = [
             'name' => $this->data['name'],
             'category' => $this->data['category'],
             'phone' => $this->data['phone'],
@@ -110,14 +132,36 @@ class EditShop extends Page
             'open_time' => $this->data['open_time'] ?? '09:00',
             'close_time' => $this->data['close_time'] ?? '21:00',
             'is_closed_today' => $this->data['is_closed_today'] ?? false,
-        ]);
+        ];
+
+        // Handle image upload properly
+        if ($this->image) {
+            // If it's a new uploaded file (Livewire temporary file)
+            if (is_object($this->image) && method_exists($this->image, 'store')) {
+                $updateData['image'] = $this->image->store('shops', 'public');
+            }
+            // If it's an existing image path string
+            elseif (is_string($this->image) && !str_contains($this->image, 'livewire-tmp')) {
+                $updateData['image'] = $this->image;
+            }
+            // If it's a temporary Livewire file, store it
+            elseif (is_string($this->image) && str_contains($this->image, 'livewire-tmp')) {
+                // This shouldn't happen with proper FileUpload component
+                $updateData['image'] = $this->image;
+            }
+        }
+
+        // Update the shop
+        $this->shop->update($updateData);
 
         Notification::make()
             ->title('Shop updated successfully')
             ->success()
             ->send();
-    }
 
+        // Refresh the page or redirect
+        $this->redirect(request()->header('Referer'));
+    }
 
     public static function canAccess(): bool
     {

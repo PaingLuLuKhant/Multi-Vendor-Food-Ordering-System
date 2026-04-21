@@ -8,6 +8,8 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Filament\Tables\Columns\ImageColumn;
+
 
 class ProductsTable
 {
@@ -27,6 +29,10 @@ class ProductsTable
                 TextColumn::make('price')
                     ->label('Price')
                     ->money('MMK'),
+                ImageColumn::make('image')
+                    ->label('Photo')
+                    ->disk('public'),
+
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -43,6 +49,7 @@ class ProductsTable
                 ViewAction::make(),
                 EditAction::make(),
             ]);
-            
+
+
     }
 }

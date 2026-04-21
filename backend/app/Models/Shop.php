@@ -23,6 +23,8 @@ class Shop extends Model
         'open_time',
         'close_time',
         'is_closed_today',
+        'image', // ✅ Add this
+
     ];
     public function products()
     {
