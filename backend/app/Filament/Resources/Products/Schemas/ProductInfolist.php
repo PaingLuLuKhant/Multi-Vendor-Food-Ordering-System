@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Schema;
+use Filament\Infolists\Components\ImageEntry;
+
 
 class ProductInfolist
 {
@@ -22,6 +24,10 @@ class ProductInfolist
                 TextEntry::make('updated_at')
                     ->dateTime()
                     ->placeholder('-'),
+                ImageEntry::make('image')
+                ->label('Menu Photo')
+                ->disk('public'),
+
             ]);
     }
 }

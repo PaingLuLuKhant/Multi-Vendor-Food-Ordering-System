@@ -55,6 +55,13 @@ const ShopPage = () => {
 
   const isOpen = shop?.is_open_now;
 
+  // Helper function to get full image URL
+  const getImageUrl = (imagePath) => {
+    if (!imagePath) return null;
+    if (imagePath.startsWith('http')) return imagePath;
+    return `http://127.0.0.1:8000/storage/${imagePath}`;
+  };
+
   // ===== FETCH SHOP DATA =====
   useEffect(() => {
     const fetchShop = async () => {
@@ -202,33 +209,51 @@ const ShopPage = () => {
     ? shop?.products || []
     : shop.products.filter(p => p.category === activeTab);
 
+  // Professional renderStars function with proper half-star support
   const renderStars = (rating, interactive = false, onRate = null) => {
     if (interactive) {
       return (
         <div className="star-rating interactive">
-          {[1,2,3,4,5].map(star => {
-            const isFilled = star <= Math.floor(rating);
-            const isHalf = star === Math.ceil(rating) && rating % 1 >= 0.5;
+          {[1, 2, 3, 4, 5].map(star => {
+            const isFilled = rating >= star;
+            const isHalf = !isFilled && rating >= star - 0.5 && rating % 1 !== 0;
+            
             return (
               <span
                 key={star}
                 className={`star ${isFilled ? 'filled' : ''} ${isHalf ? 'half' : ''}`}
                 onClick={() => onRate && onRate(star)}
                 style={{ cursor: 'pointer' }}
-              >★</span>
+                role="button"
+                aria-label={`Rate ${star} star${star !== 1 ? 's' : ''}`}
+              >
+                ★
+              </span>
             );
           })}
         </div>
       );
     } else {
+      // Calculate stars for display
       const fullStars = Math.floor(rating);
       const hasHalfStar = rating % 1 >= 0.5;
       const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+      
       return (
-        <span className="rating-stars">
-          {"★".repeat(fullStars)}
-          {hasHalfStar && <span className="half-star">★</span>}
-          {"☆".repeat(emptyStars)}
+        <span className="rating-stars" role="img" aria-label={`Rating: ${rating.toFixed(1)} out of 5 stars`}>
+          {fullStars > 0 && (
+            <span className="filled-stars" aria-hidden="true">
+              {"★".repeat(fullStars)}
+            </span>
+          )}
+          {hasHalfStar && (
+            <span className="half-star" aria-hidden="true">★</span>
+          )}
+          {emptyStars > 0 && (
+            <span className="empty-stars" aria-hidden="true">
+              {"☆".repeat(emptyStars)}
+            </span>
+          )}
         </span>
       );
     }
@@ -267,11 +292,32 @@ const ShopPage = () => {
       }}>
         <div className="shop-header-content">
           <div className="shop-header-image">
-            {shop.image ? <img src={shop.image} alt={shop.name} /> :
+            {shop.image ? (
+              <img 
+                src={getImageUrl(shop.image)} 
+                alt={shop.name}
+                onError={(e) => {
+                  console.error('Failed to load shop image:', e.target.src);
+                  e.target.onerror = null;
+                  e.target.style.display = 'none';
+                  const parent = e.target.parentElement;
+                  if (parent) {
+                    const fallbackDiv = document.createElement('div');
+                    fallbackDiv.className = 'shop-initials-logo';
+                    fallbackDiv.style.background = categoryColors.gradient;
+                    fallbackDiv.innerHTML = `<span>${categoryIcon}</span>`;
+                    parent.innerHTML = '';
+                    parent.appendChild(fallbackDiv);
+                  }
+                }}
+              />
+            ) : (
               <div className="shop-initials-logo" style={{ background: categoryColors.gradient }}>
                 <span>{categoryIcon}</span>
-              </div>}
+              </div>
+            )}
           </div>
+
           <div className="shop-header-info">
             <h1>{shop.name}</h1>
             <p className="shop-description">{shop.description}</p>
@@ -328,9 +374,6 @@ const ShopPage = () => {
           <span>🔒</span>
           <div>
             <strong>This shop is currently closed</strong>
-            {/* <p style={{ fontSize: '0.9rem', marginTop: '0.25rem', color: '#666' }}>
-              Opening hours: {formatTime(shop.open_time)} - {formatTime(shop.close_time)}
-            </p> */}
           </div>
         </div>
       )}
@@ -352,8 +395,27 @@ const ShopPage = () => {
             <div className="products-grid">
               {filteredProducts.map(product => {
                 const quantityInCart = globalQuantities[product.id] || 0;
+                const imageUrl = getImageUrl(product.image);
+                
                 return (
                   <div key={product.id} className="product-card">
+                    <div className="product-image-container">
+                      {imageUrl ? (
+                        <img
+                          className="product-image"
+                          src={imageUrl}
+                          alt={product.name}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                            e.target.parentElement.innerHTML = '<div class="product-image-placeholder">🍽️</div>';
+                          }}
+                        />
+                      ) : (
+                        <div className="product-image-placeholder">
+                          {product.category === 'beverage' ? '🥤' : product.category === 'dessert' ? '🍰' : '🍽️'}
+                        </div>
+                      )}
+                    </div>
                     <div className="product-info">
                       <h3>{product.name}</h3>
                       <div className="product-price-row">

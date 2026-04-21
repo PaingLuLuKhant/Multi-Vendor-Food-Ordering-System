@@ -5,7 +5,7 @@ import './RegisterPage.css'; // your full CSS
 
 const RegisterPage = () => {
     const { register } = useAuth();
-    const navigate = useNavigate();
+    const navigate = useNavigate(); 
 
     const [formData, setFormData] = useState({
         name: '',
@@ -20,7 +20,11 @@ const RegisterPage = () => {
 
     const [errors, setErrors] = useState({});
     const [isLoading, setIsLoading] = useState(false);
+    
+    // Separate states for password and confirm password visibility
     const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    
     const [passwordStrength, setPasswordStrength] = useState({
         score: 0,
         hasMinLength: false,
@@ -198,7 +202,7 @@ const RegisterPage = () => {
                 <div className="register-card">
                     <div className="register-header">
                         <h1>Create Account</h1>
-                        <p>Join thousands of happy customers</p>
+                        {/* <p>Join thousands of happy customers</p> */}
                     </div>
 
                     {errors.general && (
@@ -259,6 +263,7 @@ const RegisterPage = () => {
                         </div>
 
                         <div className="form-row password-row">
+                            {/* Password Field with Independent Eye Toggle */}
                             <div className="form-group">
                                 <label htmlFor="password" className="form-label">Password *</label>
                                 <div className="password-input-group">
@@ -355,19 +360,39 @@ const RegisterPage = () => {
                                 {errors.password && <span className="error-message">{errors.password}</span>}
                             </div>
 
+                            {/* Confirm Password Field with Independent Eye Toggle */}
                             <div className="form-group">
                                 <label htmlFor="confirmPassword" className="form-label">Confirm Password *</label>
-                                <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    value={formData.confirmPassword}
-                                    onChange={handleInputChange}
-                                    className={`form-input ${errors.confirmPassword ? 'error' : ''}`}
-                                    placeholder="Confirm your password"
-                                    disabled={isLoading}
-                                    autoComplete="new-password"
-                                />
+                                <div className="password-input-group">
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        id="confirmPassword"
+                                        name="confirmPassword"
+                                        value={formData.confirmPassword}
+                                        onChange={handleInputChange}
+                                        className={`form-input password-input ${errors.confirmPassword ? 'error' : ''}`}
+                                        placeholder="Confirm your password"
+                                        disabled={isLoading}
+                                        autoComplete="new-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        disabled={isLoading}
+                                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        <img
+                                            src={showConfirmPassword ? "/icons/eye_open.png" : "/icons/eye_closed.png"}
+                                            alt={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                            className="eye-icon"
+                                            onError={(e) => {
+                                                e.target.onerror = null;
+                                                e.target.src = ''; // Fallback if image fails to load
+                                            }}
+                                        />
+                                    </button>
+                                </div>
                                 {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
                             </div>
                         </div>
@@ -401,17 +426,6 @@ const RegisterPage = () => {
                             <p>Already have an account? <Link to="/login" className="link">Sign in here</Link></p>
                         </div>
                     </form>
-
-                    {/* <div className="register-footer">
-                        <p>By creating an account, you agree to our</p>
-                        <div className="footer-links">
-                            <Link to="/terms" className="footer-link" target="_blank">Terms</Link>
-                            <span className="separator">•</span>
-                            <Link to="/privacy" className="footer-link" target="_blank">Privacy</Link>
-                            <span className="separator">•</span>
-                            <Link to="/cookies" className="footer-link" target="_blank">Cookies</Link>
-                        </div>
-                    </div> */}
                 </div>
             </div>
         </div>

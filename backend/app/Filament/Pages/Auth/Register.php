@@ -27,12 +27,21 @@ class Register extends BaseRegister
                     ->label('Password')
                     ->required()
                     ->password()
-                    ->minLength(8),
+                    ->revealable()
+                    ->minLength(8)
+                    ->rules([
+                        'regex:/^(?=.*[A-Z])(?=.*\d).+$/'
+                    ])
+                    ->validationMessages([
+                        'min' => 'Password must be at least 8 characters.',
+                        'regex' => 'Password must contain at least one uppercase letter and one number.',
+                    ]),
 
                 TextInput::make('password_confirmation')
                     ->label('Confirm Password')
                     ->required()
                     ->password()
+                    ->revealable()
                     ->same('password'),
             ]);
     }
@@ -46,7 +55,7 @@ class Register extends BaseRegister
         return $data;
     }
 
-        protected function afterRegister(): void
+    protected function afterRegister(): void
     {
         $user = $this->form->getRecord();
 

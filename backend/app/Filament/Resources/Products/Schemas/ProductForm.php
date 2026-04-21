@@ -5,6 +5,8 @@ namespace App\Filament\Resources\Products\Schemas;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\FileUpload;
+
 
 
 class ProductForm
@@ -22,6 +24,13 @@ class ProductForm
                     ->required()
                     ->numeric()
                     ->prefix('MMK'),
+                FileUpload::make('image')
+                    ->label('Menu Photo')
+                    ->image()
+                    ->directory('products')
+                    ->disk('public')
             ]);
+
     }
+
 }

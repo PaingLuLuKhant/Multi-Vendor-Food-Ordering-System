@@ -135,7 +135,7 @@
   word-break: break-word;
 }
 
-.form-label::after {
+/* .form-label::after {
   content: '';
   display: inline-block;
   width: 4px;
@@ -144,7 +144,7 @@
   border-radius: 50%;
   margin-left: 2px;
   vertical-align: middle;
-}
+} */
 
 /* Optional field indicator */
 .form-label.optional::after {
